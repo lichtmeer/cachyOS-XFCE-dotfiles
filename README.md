@@ -2,33 +2,42 @@
 
 My CachyOS (Arch-based) + XFCE desktop, rebuilt around Polybar as a complete
 desktop shell replacement. Material You dark design, floating pill bar,
-Rofi launcher, picom compositor.
+Rofi launcher and power menu, picom compositor with rounded corners.
 
 ## Layout
 
 | Folder | Contents | Install to |
 |---|---|---|
-| `polybar/` | `config.ini`, `launch.sh`, `hide-when-overlapped.sh` | `~/.config/polybar/` |
-| `rofi/` | `config.rasi` | `~/.config/rofi/` |
+| `polybar/` | `config.ini`, `launch.sh`, `hide-when-overlapped.sh`, `cachyos-updates.sh` | `~/.config/polybar/` |
+| `rofi/` | `config.rasi`, `grid.rasi`, `power.rasi`, `power-buttons.rasi`, `power-menu.sh`, `power.sh` | `~/.config/rofi/` |
 | `picom/` | `picom.conf` | `~/.config/picom/` |
-| `autostart/` | `polybar-watcher.desktop` | `~/.config/autostart/` |
+| `autostart/` | `Polybar.desktop`, `picom.desktop`, `Polybar overlap watcher.desktop` | `~/.config/autostart/` |
 | `changes/` | dated change reports | - |
 
 ## What it looks like
 
-- **google-top bar**: floating rounded pill, 66% width, centered top,
-  Material You dark tonal palette (#1C1B1F surface, #A4C3FF accent).
-  Left: power button (IEC power symbol, runs xfce4-session-logout) and
-  GNOME-style workspace dots. Center: clock. Right: disk, volume, RAM,
-  CPU, tray.
+- **google-top bar**: floating rounded pill, 95% width, 24pt height, 2.5%
+  horizontal offset, centered top, Material You dark tonal palette
+  (#1C1B1F surface, #A4C3FF accent). Left: power button (IEC power symbol,
+  opens the Rofi power menu) and GNOME-style workspace dots. Center: clock.
+  Right: disk, volume, RAM, CPU, update checker, tray.
 - **struthelper**: invisible full-width bar that reserves the entire top
   row so no window ever sits beside the pill.
 - **hide-when-overlapped.sh**: watcher that hides the pill when a window
   is dragged over it or a window goes fullscreen (F11).
-- **Rofi launcher**: Ribbon Top Round layout, recolored to match the bar,
-  pixel-aligned with the pill, toggled with Super+Space.
-- **picom**: GLX backend compositor; polybar `pseudo-transparency` must
-  stay `false` (with a compositor, `true` causes black corner artifacts).
+- **Rofi launcher**: compact centered list (480px) a few pixels below the
+  bar, recolored to the polybar palette, YAMIS icons, blue rounded
+  selection frame, toggled with Super+Space.
+- **Rofi power menu**: five Android-style buttons (Log out, Restart,
+  Shutdown, Suspend, Switch User) with per-entry icons, centered and
+  aligned. Destructive actions (Restart, Shutdown) show a confirmation
+  step before running. Opened from the bar's power icon.
+- **Update checker**: CachyOS logo (Nerd Font) between CPU and tray.
+  White icon when up to date; pulses white/blue with the pending count
+  when updates are available. Checks at login, then hourly.
+- **picom**: GLX backend compositor, 12px rounded window corners
+  (fullscreen excluded). Polybar `pseudo-transparency` must stay `false`
+  (with a compositor, `true` causes black corner artifacts).
 
 ## XFCE settings not stored in files
 
@@ -61,12 +70,12 @@ Manual steps:
 
 ## Dependencies
 
-    sudo pacman -S polybar picom rofi xdotool \
+    sudo pacman -S polybar picom rofi xdotool alacritty \
       ttf-nerd-fonts-symbols noto-fonts noto-fonts-cjk
 
 Icon theme: "Yet Another Monochrome Icon Set" (YAMIS) for tray icons
-(nm-applet). Fonts used: Noto Sans, Symbols Nerd Font, Noto Sans CJK TC
-(the CJK font provides the workspace dots).
+(nm-applet) and Rofi icons. Fonts used: Noto Sans, Symbols Nerd Font,
+Noto Sans CJK TC (the CJK font provides the workspace dots).
 
 ## Known caveats
 
@@ -77,6 +86,8 @@ Icon theme: "Yet Another Monochrome Icon Set" (YAMIS) for tray icons
 - Manually dragged windows can still touch the screen edges; margins only
   affect maximized windows. The watcher hides the pill if a window is
   dragged over it.
+- Switch User in the power menu depends on LightDM's `dm-tool`; on other
+  display managers it silently does nothing.
 
 ## GTK theme
 
@@ -90,7 +101,7 @@ Then set it in Settings -> Appearance (Style: Orchis-Dark) AND
 Settings -> Window Manager (Style: Orchis-Dark).
 See changes/2026-09-27-gtk-theme.md for details.
 
-## Update checker module — extra notes
+## Update checker module - extra notes
 
 The polybar update module (`polybar/cachyos-updates.sh`) needs two packages
 that are not part of the dotfiles themselves:
