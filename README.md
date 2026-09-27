@@ -77,3 +77,15 @@ Icon theme: "Yet Another Monochrome Icon Set" (YAMIS) for tray icons
 - Manually dragged windows can still touch the screen edges; margins only
   affect maximized windows. The watcher hides the pill if a window is
   dragged over it.
+
+## GTK theme
+
+Orchis (Material Design) dark variant by vinceliuice. Not stored in this
+repo (re-downloadable). Restore with:
+
+    git clone https://github.com/vinceliuice/Orchis-theme.git ~/Orchis-theme
+    ~/Orchis-theme/install.sh --theme default --color dark
+
+Then set it in Settings -> Appearance (Style: Orchis-Dark) AND
+Settings -> Window Manager (Style: Orchis-Dark).
+See changes/2026-09-27-gtk-theme.md for details.
