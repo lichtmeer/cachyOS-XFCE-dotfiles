@@ -89,3 +89,26 @@ repo (re-downloadable). Restore with:
 Then set it in Settings -> Appearance (Style: Orchis-Dark) AND
 Settings -> Window Manager (Style: Orchis-Dark).
 See changes/2026-09-27-gtk-theme.md for details.
+
+## Update checker module — extra notes
+
+The polybar update module (`polybar/cachyos-updates.sh`) needs two packages
+that are not part of the dotfiles themselves:
+
+    sudo pacman -S cachy-update pacman-contrib
+
+- `pacman-contrib` provides `checkupdates`, which the module uses to count
+  pending updates. Without it, the icon stays white and quiet.
+- `cachy-update` is the guided updater that opens when you left-click the icon
+  (runs in alacritty: `alacritty -e cachy-update`).
+
+Behavior summary:
+
+- Checks at login, then once every hour. Right-click the icon to re-check
+  immediately; left-click to run the updater.
+- White CachyOS icon = up to date. Pulsing white/blue icon with a count =
+  updates available.
+
+The files `~/.cache/polybar-cachyos-updates.*` (`.state`, `.stamp`, `.force`)
+are throwaway runtime data created by the module. They are safe to delete at
+any time and must never be committed to this repo.
