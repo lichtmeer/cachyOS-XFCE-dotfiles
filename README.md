@@ -4,6 +4,10 @@ My CachyOS (Arch-based) + XFCE desktop, rebuilt around Polybar as a complete
 desktop shell replacement. Material You dark design, floating pill bar,
 Rofi launcher and power menu, picom compositor with rounded corners.
 
+## Setup
+
+Full step-by-step install guide: see [INSTALL.md](INSTALL.md)
+
 ## Layout
 
 | Folder | Contents | Install to |
