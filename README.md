@@ -36,6 +36,7 @@ Rofi launcher and power menu, picom compositor with rounded corners.
   White icon when up to date; pulses white/blue with the pending count
   when updates are available. Checks at login, then hourly.
 - **picom**: GLX backend compositor, 12px rounded window corners
+- **Plank dock**: bottom dock in the Material You pill style (custom `MaterialPill` theme in `plank/`), autostarted via `autostart/plank.desktop`.
   (fullscreen excluded). Polybar `pseudo-transparency` must stay `false`
   (with a compositor, `true` causes black corner artifacts).
 
@@ -70,7 +71,7 @@ Manual steps:
 
 ## Dependencies
 
-    sudo pacman -S polybar picom rofi xdotool alacritty \
+    sudo pacman -S polybar picom rofi plank xdotool alacritty \
       ttf-nerd-fonts-symbols noto-fonts noto-fonts-cjk
 
 Icon theme: "Yet Another Monochrome Icon Set" (YAMIS) for tray icons
