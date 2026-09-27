@@ -7,12 +7,12 @@ hidden=false
 
 # --- Bar rectangle, matching your config.ini (edit here if you change the bar) ---
 read -r screen_w screen_h <<< "$(xdotool getdisplaygeometry)"
-BAR_WIDTH_PCT=66
-BAR_OFFSET_X_PCT=17
+BAR_WIDTH_PCT=95
+BAR_OFFSET_X_PCT=2.5
 PAD=8                    # 6pt borders = 8px
 bar_y=16                 # offset-y = 12pt = 16px
-bar_h=56                 # height 36pt = 48px + 8px bottom border
-bar_x=$(( screen_w * BAR_OFFSET_X_PCT / 100 - PAD ))
+bar_h=40                 # height 24pt = 32px + 8px bottom border
+bar_x=$(awk -v w="$screen_w" -v p="$BAR_OFFSET_X_PCT" -v pad="$PAD" 'BEGIN{printf "%d", w * p / 100 - pad}')
 bar_w=$(( screen_w * BAR_WIDTH_PCT / 100 + 2 * PAD ))
 
 log() { echo "$(date +%H:%M:%S) $*" >> "$LOG"; }
@@ -23,7 +23,7 @@ while true; do
     overlap=false
 
     n_bars=$(xdotool search --name "polybar" 2>/dev/null | wc -l)
-    if (( n_bars > 1 )); then
+    if (( n_bars > 4 )); then
         log "WARNING: $n_bars windows match the name 'polybar'"
     fi
 
