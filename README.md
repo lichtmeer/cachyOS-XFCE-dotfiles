@@ -69,6 +69,20 @@ Manual steps:
 - Clear saved sessions once after setup (Session and Startup -> Sessions),
   so the watcher does not start twice.
 
+## Login screen (LightDM GTK greeter)
+
+Themed to match the desktop, but stored in system files - not in this repo.
+On a fresh install, re-apply:
+
+    sudo cp -r ~/.themes/Orchis-Dark /usr/share/themes/
+
+Then in /etc/lightdm/lightdm-gtk-greeter.conf, [greeter] section:
+
+    theme-name = Orchis-Dark
+    icon-theme-name = Adwaita
+    font-name = Noto Sans 11
+    background = #1C1B1F
+
 ## Dependencies
 
     sudo pacman -S polybar picom rofi plank xdotool alacritty \
