@@ -24,7 +24,7 @@ case "$1" in
         printf 'Yes, restart\0icon\x1fsystem-reboot\n'
         ;;
     "Yes, restart")
-        xfce4-session-logout --restart ;;
+        xfce4-session-logout --reboot ;;
     "Shutdown")
         printf '\0message\x1fShut down now?\n'
         printf 'Cancel\0icon\x1fwindow-close\n'
