@@ -17,6 +17,7 @@ Full step-by-step install guide: see [INSTALL.md](INSTALL.md)
 | `picom/` | `picom.conf` | `~/.config/picom/` |
 | `autostart/` | `Polybar.desktop`, `picom.desktop`, `Polybar overlap watcher.desktop` | `~/.config/autostart/` |
 | `changes/` | dated change reports | - |
+| `wallpapers/` | wallpaper collection, used by `rofi/wallpaper.sh` | `~/Pictures/wallpapers/` |
 
 ## What it looks like
 
