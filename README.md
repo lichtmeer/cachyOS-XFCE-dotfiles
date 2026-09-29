@@ -13,7 +13,7 @@ Full step-by-step install guide: see [INSTALL.md](INSTALL.md)
 | Folder | Contents | Install to |
 |---|---|---|
 | `polybar/` | `config.ini`, `launch.sh`, `hide-when-overlapped.sh`, `cachyos-updates.sh` | `~/.config/polybar/` |
-| `rofi/` | `config.rasi`, `grid.rasi`, `power.rasi`, `power-buttons.rasi`, `power-menu.sh`, `power.sh` | `~/.config/rofi/` |
+| `rofi/` | `config.rasi`, `grid.rasi`, `power.rasi`, `power-buttons.rasi`, `power-menu.sh`, `power.sh`, `window.rasi` | `~/.config/rofi/` |
 | `picom/` | `picom.conf` | `~/.config/picom/` |
 | `autostart/` | `Polybar.desktop`, `picom.desktop`, `Polybar overlap watcher.desktop` | `~/.config/autostart/` |
 | `changes/` | dated change reports | - |
@@ -33,6 +33,7 @@ Full step-by-step install guide: see [INSTALL.md](INSTALL.md)
 - **Rofi launcher**: compact centered list (480px) a few pixels below the
   bar, recolored to the polybar palette, YAMIS icons, blue rounded
   selection frame, toggled with Super+Space.
+- **Rofi window switcher** (`window.rasi`): same look as the launcher, opened with Super+Tab (`rofi -show window -theme window`). Alt+Tab cycles the list while open.
 - **Rofi power menu**: five Android-style buttons (Log out, Restart,
   Shutdown, Suspend, Switch User) with per-entry icons, centered and
   aligned. Destructive actions (Restart, Shutdown) show a confirmation
