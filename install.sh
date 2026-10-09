@@ -1,0 +1,136 @@
+#!/bin/bash
+# install.sh — one-command install for the whole desktop.
+#   git clone https://github.com/lichtmeer/cachyOS-XFCE-dotfiles
+#   cd cachyOS-XFCE-dotfiles && bash install.sh
+# Asks questions only when needed (weather location, wallpapers, theme).
+# Safe to re-run; existing private files are kept.
+
+set -e
+REPO="$(pwd)"
+[ -f "$REPO/polybar/config.ini" ] || { echo "Run from the repo root."; exit 1; }
+
+echo "=========================================="
+echo " CachyOS + XFCE desktop — one-command setup"
+echo " user: $(whoami)   host: $(uname -n)"
+echo "=========================================="
+
+echo "==> [1/9] System packages (sudo) ..."
+sudo pacman -S --needed --noconfirm \
+    polybar picom rofi plank xdotool imagemagick pacman-contrib \
+    cachy-update alacritty conky cava playerctl curl \
+    noto-fonts noto-fonts-cjk ttf-nerd-fonts-symbols
+echo "    done"
+
+echo "==> [2/9] Polybar ..."
+mkdir -p ~/.config/polybar
+cp polybar/* ~/.config/polybar/
+chmod +x ~/.config/polybar/*.sh
+echo "    done (bar, watcher v3, update checker)"
+
+echo "==> [3/9] Rofi ..."
+mkdir -p ~/.config/rofi
+cp rofi/* ~/.config/rofi/
+chmod +x ~/.config/rofi/*.sh
+echo "    done (launcher, power menu, wallpaper picker, alt-tab)"
+
+echo "==> [4/9] Picom ..."
+mkdir -p ~/.config/picom
+cp picom/picom.conf ~/.config/picom/
+echo "    done (shadow exclusion for the widget included)"
+
+echo "==> [5/9] Conky glance widget ..."
+bash conky/install.sh
+echo "    done (may have asked for your weather location)"
+
+echo "==> [6/9] Plank ..."
+mkdir -p ~/.local/share/plank/themes/MaterialPill
+cp plank/dock.theme ~/.local/share/plank/themes/MaterialPill/
+echo "    done (pick 'MaterialPill' in plank's preferences once)"
+
+echo "==> [7/9] Autostart + keybindings ..."
+mkdir -p ~/.config/autostart
+for f in autostart/*.desktop; do
+    sed "s|/home/fyr|$HOME|g" "$f" > ~/.config/autostart/"$(basename "$f")"
+done
+xfconf-query -c xfce4-keyboard-shortcuts -p /xfwm4/switch_window_key -t string -s "" 2>/dev/null || \
+    xfconf-query -c xfce4-keyboard-shortcuts -p /xfwm4/switch_window_key -n -t string -s ""
+xfconf-query -c xfce4-keyboard-shortcuts -p /xfwm4/cycle_windows_key -t string -s "" 2>/dev/null || \
+    xfconf-query -c xfce4-keyboard-shortcuts -p /xfwm4/cycle_windows_key -n -t string -s ""
+xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Alt>Tab" -n -t string -s "$HOME/.config/rofi/alt-tab.sh" 2>/dev/null || \
+    xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Alt>Tab" -t string -s "$HOME/.config/rofi/alt-tab.sh"
+xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>Tab" -n -t string -s "rofi -show window -theme $HOME/.config/rofi/window.rasi" 2>/dev/null || \
+    xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>Tab" -t string -s "rofi -show window -theme $HOME/.config/rofi/window.rasi"
+echo "    done (Alt+Tab hold-and-release, Super+Tab classic)"
+
+echo "==> [8/9] Wallpapers ..."
+if [ -d "$REPO/wallpapers" ] && ls "$REPO"/wallpapers/* >/dev/null 2>&1; then
+    read -r -p "    Copy the repo's wallpapers to ~/Pictures/wallpapers? [Y/n] " ANS
+    if [ "${ANS:-y}" != "n" ] && [ "${ANS:-Y}" != "n" ]; then
+        mkdir -p ~/Pictures/wallpapers
+        cp wallpapers/* ~/Pictures/wallpapers/
+        echo "    copied"
+    else
+        echo "    skipped"
+    fi
+fi
+
+echo "==> [9/9] Icon pack + GTK theme (optional, from GitHub) ..."
+read -r -p "    Install YAMIS icons + Orchis-Dark theme? (needs internet; ~1 min) [y/N] " THEME
+if [ "$THEME" = "y" ] || [ "$THEME" = "Y" ]; then
+    TMP=$(mktemp -d)
+    echo "    downloading Orchis theme ..."
+    if git clone --depth 1 https://github.com/vinceliuice/Orchis-theme.git "$TMP/Orchis" 2>/dev/null; then
+        (cd "$TMP/Orchis" && bash install.sh --theme default --color dark >/dev/null 2>&1) \
+            && echo "    Orchis-Dark installed" || echo "    Orchis install FAILED (continue; set theme manually later)"
+    else
+        echo "    Orchis download failed (offline? skipped)"
+    fi
+    echo "    downloading YAMIS icon set ..."
+    if git clone --depth 1 https://github.com/yeyushengfanw/yamis-icon-theme.git "$TMP/yamis" 2>/dev/null \
+        || git clone --depth 1 https://github.com/daniruixin/yamis-icon-theme.git "$TMP/yamis" 2>/dev/null; then
+        mkdir -p ~/.icons
+        cp -r "$TMP"/yamis/* ~/.icons/ 2>/dev/null
+        echo "    YAMIS icons installed to ~/.icons/"
+    else
+        echo "    YAMIS download failed (offline? skipped)"
+    fi
+    rm -rf "$TMP"
+    echo ""
+    echo "    ONE MANUAL STEP LEFT (settings are yours to click):"
+    echo "      Settings > Appearance  > Style: Orchis-Dark"
+    echo "      Settings > Appearance  > Icons:  Yet-Another-Monochrome-Icon-Set"
+    echo "      Settings > Window Manager > Style: Orchis-Dark"
+else
+    echo "    skipped (see INSTALL.md section 3 for the manual route)"
+fi
+
+echo "==> Verifying ..."
+FAIL=0
+for f in ~/.config/polybar/config.ini ~/.config/polybar/hide-when-overlapped.sh \
+         ~/.config/rofi/alt-tab.sh ~/.config/picom/picom.conf \
+         ~/.config/conky/glance.lua ~/.config/conky/cava.conf \
+         ~/.local/share/plank/themes/MaterialPill/dock.theme \
+         ~/.config/autostart/"Conky glance.desktop"; do
+    [ -e "$f" ] && echo "    ok   $f" || { echo "    MISS $f"; FAIL=1; }
+done
+[ "$FAIL" = 1 ] && { echo "Some files missing — see the MISS lines."; exit 1; }
+
+cat <<'BANNER'
+
+==========================================
+ INSTALL COMPLETE — log out and back in.
+==========================================
+ Then check: pill bar + dock + glance
+ widget (weather, Spotify, spectrum),
+ Alt+Tab hold-and-release, Super+Space
+ launcher, F11 hides the bar.
+
+ If you took the theme step:
+  Settings > Appearance > Style: Orchis-Dark
+  Settings > Appearance > Icons:  YAMIS
+  Settings > Window Manager > Style: Orchis-Dark
+
+ Private files kept on this machine:
+  ~/.config/conky/location (weather)
+==========================================
+BANNER
