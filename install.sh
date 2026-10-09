@@ -202,8 +202,12 @@ if [ "$THEME" = "y" ] || [ "$THEME" = "Y" ]; then
     fi
     echo "    downloading YAMIS icon set ..."
     if git clone --depth 1 https://bitbucket.org/dirn-typo/yet-another-monochrome-icon-set.git "$TMP/yamis" 2>/dev/null; then
+        rm -rf ~/.icons/YAMIS
         mkdir -p ~/.icons/YAMIS
-        if cp -r "$TMP"/yamis/. ~/.icons/YAMIS/ 2>/dev/null; then
+        # copy WITHOUT the .git folder: git's read-only pack files make
+        # re-runs of cp fail with "Permission denied" (and shipping .git
+        # inside an icon theme is wrong anyway)
+        if (cd "$TMP/yamis" && tar --exclude=.git -cf - .) | tar -xf - -C ~/.icons/YAMIS/; then
             echo "    YAMIS icons installed to ~/.icons/YAMIS/"
         else
             echo "    YAMIS copy failed (skipped)"
