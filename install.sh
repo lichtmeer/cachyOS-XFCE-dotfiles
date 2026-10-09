@@ -246,10 +246,8 @@ if [ "$THEME" = "y" ] || [ "$THEME" = "Y" ]; then
         echo "    (if your login screen is a different greeter, set it manually)"
     fi
     echo ""
-    echo "    ONE MANUAL STEP LEFT (settings are yours to click):"
-    echo "      Settings > Appearance  > Style: Orchis-Dark"
-    echo "      Settings > Appearance  > Icons:  Yet-Another-Monochrome-Icon-Set"
-    echo "      Settings > Window Manager > Style: Orchis-Dark"
+    echo "    Nothing left to click: theme, window style and icons are"
+    echo "    applied automatically (login screen too, when found)."
 else
     echo "    skipped (see INSTALL.md section 3 for the manual route)"
 fi
@@ -275,10 +273,6 @@ cat <<'BANNER'
  Alt+Tab hold-and-release, Super+Space
  launcher, F11 hides the bar.
 
- If you took the theme step:
-  Settings > Appearance > Style: Orchis-Dark
-  Settings > Appearance > Icons:  YAMIS
-  Settings > Window Manager > Style: Orchis-Dark
 
  Private files kept on this machine:
   ~/.config/conky/location (weather)
