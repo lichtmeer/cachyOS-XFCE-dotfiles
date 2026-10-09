@@ -84,3 +84,43 @@ window the shadow reads as a dark rim. Conky itself draws no border.
 ### Fix
 Added "class_g = 'conky-glance'" to shadow-exclude in picom.conf. Only
 the widget loses its shadow; polybar and every other window keep theirs.
+
+## Addendum: overlap watcher rewritten (v3, fullscreen-only)
+
+### Symptom
+Dragging a floating window to the top of the screen — onto the invisible
+struthelper strip — made the polybar pill vanish, even though nothing
+covered it.
+
+### Root cause
+The watcher (v2) detected "bar hidden" by pixel geometry: any NORMAL
+window rectangle intersecting the bar rectangle triggered the hide. A
+floating window resting on the reserved strip intersects that rectangle
+the same way a covering window does, so it falsely triggered the hide.
+The fullscreen case it was built for worked only by coincidence
+(fullscreen windows also intersect the rectangle).
+
+### Fix
+v3 asks the window manager directly instead of doing pixel math: the bar
+now hides only while some window carries the _NET_WM_STATE_FULLSCREEN
+state (checked via xprop per visible normal window). Window positions
+are irrelevant now; F11-style fullscreen hides the bar, anything else —
+including windows touching the invisible reserve strip — does not.
+
+### Testing
+Simulated in a sandbox with stubbed xdotool/xprop/polybar-msg before
+shipping:
+
+- windowed game at the top edge -> bar stays visible
+- window enters fullscreen -> bar hides once
+- fullscreen ends mid-run -> bar returns
+- windowed game + maximized windows -> bar stays visible
+
+(The first sandbox runs "failed" due to bugs in the stub tools — wrong
+arg order, lowercase atom names — not in the watcher logic.)
+
+### Known limitation
+Games that render "fullscreen" as a plain screen-sized window without
+the X11 fullscreen state (some Wine titles, older native games) will
+not trigger the hide. If one shows up, a hybrid check (fullscreen flag
+OR window covering the whole screen) is the follow-up.
