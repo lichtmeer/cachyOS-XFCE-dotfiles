@@ -80,6 +80,26 @@ xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>Tab" -n -t 
     xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>Tab" -t string -s "rofi -show window -theme $HOME/.config/rofi/window.rasi"
 echo "    done (Alt+Tab hold-and-release, Super+Tab classic)"
 
+echo "==> XFCE settings (stock panel off, screen margins, launcher key) ..."
+# stop the stock XFCE panel from starting (failsafe session)
+xfconf-query -c xfce4-session -p /sessions/Failsafe/Client2_Command -n -t string -s /bin/true 2>/dev/null || \
+    xfconf-query -c xfce4-session -p /sessions/Failsafe/Client2_Command -t string -s /bin/true
+# remove existing panels
+xfconf-query -c xfce4-panel -p /panels -n -t int -s 0 2>/dev/null || true
+# screen-edge margins: 8px left/right/bottom, 0 top
+for side in left right bottom; do
+    xfconf-query -c xfwm4 -p /general/margin_$side -n -t int -s 8 2>/dev/null || \
+        xfconf-query -c xfwm4 -p /general/margin_$side -t int -s 8
+done
+xfconf-query -c xfwm4 -p /general/margin_top -n -t int -s 0 2>/dev/null || \
+    xfconf-query -c xfwm4 -p /general/margin_top -t int -s 0
+# Super+Space opens the app launcher
+xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>space" -n -t string -s "rofi -show drun" 2>/dev/null || \
+    xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>space" -t string -s "rofi -show drun"
+echo "    done (re-login shows the pill bar instead of the stock panel)"
+echo "    NOTE: once, in Settings > Session and Startup > Sessions:"
+echo "    clear saved sessions (prevents double-starting watchers)."
+
 echo "==> [8/9] Wallpapers ..."
 if [ -d "$REPO/wallpapers" ] && ls "$REPO"/wallpapers/* >/dev/null 2>&1; then
     read -r -p "    Copy the repo's wallpapers to ~/Pictures/wallpapers? [Y/n] " ANS
