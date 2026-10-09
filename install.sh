@@ -54,24 +54,25 @@ fi
 echo "    done"
 
 echo "==> Spotify (optional — needed for the widget's music section) ..."
-if ! command -v spotify >/dev/null 2>&1 && ! pacman -Qi spotify-launcher >/dev/null 2>&1; then
-    echo "    The glance widget shows track info + spectrum by talking to a"
-    echo "    Spotify player via playerctl. Without any Spotify installed,"
-    echo "    that section stays empty (everything else works)."
-    read -r -p "    Install spotify-launcher from the official repos now? [y/N] " SP
-    if [ "$SP" = "y" ] || [ "$SP" = "Y" ]; then
-        echo ""
-        echo "    NOTE: the next prompt is your SUDO PASSWORD (for pacman)."
-        echo "    It is NOT a login of any kind."
-        echo ""
-        sudo pacman -S --needed --noconfirm spotify-launcher \
-            && echo "    spotify-launcher installed" \
-            || echo "    install failed — continue anyway (widget works otherwise)"
-    else
-        echo "    skipped — install later with: sudo pacman -S spotify-launcher"
-    fi
+# ALWAYS ask — even if already installed (the user decides every run;
+# --needed makes a redundant install a no-op, never a reinstall)
+if pacman -Qi spotify-launcher >/dev/null 2>&1; then
+    echo "    spotify-launcher is already installed."
+fi
+echo "    The glance widget shows track info + spectrum by talking to a"
+echo "    Spotify player via playerctl. Without any Spotify installed,"
+echo "    that section stays empty (everything else works)."
+read -r -p "    Install spotify-launcher from the official repos now? [y/N] " SP
+if [ "$SP" = "y" ] || [ "$SP" = "Y" ]; then
+    echo ""
+    echo "    NOTE: the next prompt is your SUDO PASSWORD (for pacman)."
+    echo "    It is NOT a login of any kind."
+    echo ""
+    sudo pacman -S --needed --noconfirm spotify-launcher \
+        && echo "    spotify-launcher ready" \
+        || echo "    install failed — continue anyway (widget works otherwise)"
 else
-    echo "    Spotify or spotify-launcher already present — nothing to do"
+    echo "    skipped — install later with: sudo pacman -S spotify-launcher"
 fi
 
 echo "==> [2/9] Polybar ..."
