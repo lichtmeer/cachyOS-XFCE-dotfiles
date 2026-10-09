@@ -6,6 +6,13 @@ set -e
 SRC="$(cd "$(dirname "$0")" && pwd)"
 CFG="$HOME/.config/conky"
 
+# Never run as root: the widget belongs to the user session.
+if [ "$(id -u)" = "0" ]; then
+    echo "ERROR: do not run this with sudo or as root."
+    echo "Run it as your normal user:  bash conky/install.sh"
+    exit 1
+fi
+
 echo "==> Checking packages..."
 command -v cava  >/dev/null 2>&1 || { echo "    cava missing:  sudo pacman -S cava";  exit 1; }
 command -v conky >/dev/null 2>&1 || { echo "    conky missing: sudo pacman -S conky"; exit 1; }
@@ -37,10 +44,13 @@ else
 fi
 
 echo "==> Pinning cava to your default audio output ..."
-SINK=$(pactl info | grep 'Default Sink' | awk '{print $3}')
+SINK=$(pactl info 2>/dev/null | grep 'Default Sink' | awk '{print $3}')
 if [ -n "$SINK" ]; then
     sed -i "s|^source *=.*|source = ${SINK}.monitor|" "$CFG/cava.conf"
     echo "    source = ${SINK}.monitor"
+else
+    echo "    no running audio server found — cava left at its default"
+    echo "    (it will be pinned to your output next time the installer runs)"
 fi
 
 echo "==> Installing autostart entry ..."

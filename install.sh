@@ -9,6 +9,15 @@ set -e
 REPO="$(pwd)"
 [ -f "$REPO/polybar/config.ini" ] || { echo "Run from the repo root."; exit 1; }
 
+# Never run as root: configs must go to YOUR home, not /root,
+# and the desktop settings tools need your user session.
+if [ "$(id -u)" = "0" ]; then
+    echo "ERROR: do not run this with sudo or as root."
+    echo "Run it as your normal user:  bash install.sh"
+    echo "(It asks for your sudo password only for the pacman step.)"
+    exit 1
+fi
+
 echo "=========================================="
 echo " CachyOS + XFCE desktop — one-command setup"
 echo " user: $(whoami)   host: $(uname -n)"
@@ -33,6 +42,11 @@ if [ -n "$OUTDATED" ]; then
 fi
 if [ -n "$MISSING" ]; then
     echo "    installing missing:$MISSING"
+    echo ""
+    echo "    NOTE: the next prompt is your SUDO PASSWORD (for pacman)."
+    echo "    It is NOT a login of any kind and this script never talks"
+    echo "    to GitHub. Do not run the whole script with sudo instead."
+    echo ""
     sudo pacman -S --needed --noconfirm $MISSING
 else
     echo "    all packages already installed — nothing to do"

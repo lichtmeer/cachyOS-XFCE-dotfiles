@@ -95,3 +95,9 @@ Every change is documented in `changes/` — dated reports with symptoms,
 root causes and fixes (boot races, wttr.in localization, cava raw
 output, the weather timer, the Alt+Tab keybinding lesson, portability
 fixes). Start with the oldest and read up.
+
+> **No GitHub account needed.** Plain `git clone` works anonymously on
+> this public repo. Do not use `gh repo clone` on a fresh machine — the
+> GitHub CLI demands a login even for public repos. And never run the
+> installer with `sudo` — the only elevated part is the internal
+> `sudo pacman` call, which asks for your sudo password once.
