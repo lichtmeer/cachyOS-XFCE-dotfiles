@@ -70,3 +70,17 @@ Kept the transparent Google "At a Glance" look, refined the details:
   playing" state (same [] risk as the weather icon had).
 
 The cava spectrum, palette, fonts, and all behavior are unchanged.
+
+## Addendum: shadow around the widget removed
+
+### Symptom
+A dark halo framed the transparent conky-glance widget, looking like an
+unwanted border.
+
+### Cause
+picom draws soft shadows around all windows; on a fully transparent
+window the shadow reads as a dark rim. Conky itself draws no border.
+
+### Fix
+Added "class_g = 'conky-glance'" to shadow-exclude in picom.conf. Only
+the widget loses its shadow; polybar and every other window keep theirs.
