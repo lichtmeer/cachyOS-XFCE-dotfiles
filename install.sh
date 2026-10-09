@@ -24,16 +24,24 @@ echo " user: $(whoami)   host: $(uname -n)"
 echo "=========================================="
 
 echo "==> [1/9] System packages ..."
+echo "    This step makes sure every tool the desktop needs is installed:"
+echo "    the bar (polybar), compositor (picom), menus (rofi), dock (plank),"
+echo "    terminal (alacritty), widget (conky), spectrum (cava), and helpers."
 # check each package: installed+current = skip, installed+outdated = report,
 # missing = install
 PKGS="polybar picom rofi plank xdotool imagemagick pacman-contrib cachy-update alacritty conky cava playerctl curl noto-fonts noto-fonts-cjk ttf-nerd-fonts-symbols"
+echo "    checking every package — watching me work:"
 MISSING=""; OUTDATED=""
 for p in $PKGS; do
     if ! pacman -Qi "$p" >/dev/null 2>&1; then
         MISSING="$MISSING $p"
+        echo "        MISSING : $p"
     elif [ -n "$(checkupdates 2>/dev/null | grep -F " $p " )" ] || \
          [ -n "$(checkupdates 2>/dev/null | grep -F "/$p ")" ]; then
         OUTDATED="$OUTDATED $p"
+        echo "        outdated: $p (installed, not touched)"
+    else
+        echo "        ok      : $p"
     fi
 done
 if [ -n "$OUTDATED" ]; then
@@ -47,7 +55,7 @@ if [ -n "$MISSING" ]; then
     echo "    It is NOT a login of any kind and this script never talks"
     echo "    to GitHub. Do not run the whole script with sudo instead."
     echo ""
-    sudo pacman -S --needed --noconfirm $MISSING
+    sudo pacman -S --needed --noconfirm --color=always $MISSING
 else
     echo "    all packages already installed — nothing to do"
 fi
@@ -132,13 +140,18 @@ xfconf-query -c xfce4-panel -p /panels -n -t int -s 0 2>/dev/null || true
 # picom replaces xfwm4's own compositor — turn it off
 xfconf-query -c xfwm4 -p /general/use_compositing -n -t bool -s false 2>/dev/null || \
     xfconf-query -c xfwm4 -p /general/use_compositing -t bool -s false
-# screen-edge margins: 8px left/right/bottom, 0 top
-for side in left right bottom; do
-    xfconf-query -c xfwm4 -p /general/margin_$side -n -t int -s 8 2>/dev/null || \
-        xfconf-query -c xfwm4 -p /general/margin_$side -t int -s 8
-done
+# workspace margins: keep windows off the dock and the invisible bar strip.
+# top=0 (the bar watcher handles fullscreen itself), left/right=55
+# (dock space), bottom=15
 xfconf-query -c xfwm4 -p /general/margin_top -n -t int -s 0 2>/dev/null || \
     xfconf-query -c xfwm4 -p /general/margin_top -t int -s 0
+for side in left right; do
+    xfconf-query -c xfwm4 -p /general/margin_$side -n -t int -s 55 2>/dev/null || \
+        xfconf-query -c xfwm4 -p /general/margin_$side -t int -s 55
+done
+xfconf-query -c xfwm4 -p /general/margin_bottom -n -t int -s 15 2>/dev/null || \
+    xfconf-query -c xfwm4 -p /general/margin_bottom -t int -s 15
+echo "    workspace margins set: top 0, left/right 55, bottom 15"
 # Super+Space opens the app launcher
 xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>space" -n -t string -s "rofi -show drun" 2>/dev/null || \
     xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>space" -t string -s "rofi -show drun"
@@ -160,6 +173,17 @@ if [ -d "$REPO/wallpapers" ] && ls "$REPO"/wallpapers/* >/dev/null 2>&1; then
         mkdir -p ~/Pictures/wallpapers
         cp wallpapers/* ~/Pictures/wallpapers/
         echo "    copied"
+        # set a random wallpaper so the switcher has a starting point
+        RAND=$(find "$HOME/Pictures/wallpapers" -maxdepth 1 -type f \
+            \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' \) | shuf -n1)
+        if [ -n "$RAND" ]; then
+            echo "    setting a random wallpaper as the starting point ..."
+            xfconf-query -c xfce4-desktop -l 2>/dev/null | grep 'last-image' | while read -r prop; do
+                xfconf-query -c xfce4-desktop -p "$prop" -s "$RAND" 2>/dev/null
+            done
+            echo "    set: $RAND"
+            echo "    (Super+< now works — the switcher needs a current wallpaper)"
+        fi
     else
         echo "    skipped"
     fi
@@ -188,7 +212,7 @@ if [ "$THEME" = "y" ] || [ "$THEME" = "Y" ]; then
         echo "    YAMIS download failed (offline? skipped)"
     fi
     rm -rf "$TMP"
-    echo "    applying theme + icons via xfconf ..."
+    echo "==> Applying YAMIS icons + Orchis-Dark theme to your desktop ..."
     xfconf-query -c xsettings -p /Net/ThemeName -n -t string -s "Orchis-Dark" 2>/dev/null || \
         xfconf-query -c xsettings -p /Net/ThemeName -t string -s "Orchis-Dark"
     if [ -d ~/.icons/YAMIS ]; then
@@ -197,8 +221,26 @@ if [ "$THEME" = "y" ] || [ "$THEME" = "Y" ]; then
     fi
     xfconf-query -c xfwm4 -p /general/theme -n -t string -s "Orchis-Dark" 2>/dev/null || \
         xfconf-query -c xfwm4 -p /general/theme -t string -s "Orchis-Dark"
-    echo "    applied: GTK theme Orchis-Dark, window theme Orchis-Dark, icons YAMIS"
-    echo "    (visible everywhere after the next log-in)"
+    echo "    applied to your session: GTK theme Orchis-Dark, window theme"
+    echo "    Orchis-Dark, icons YAMIS (fully visible after the next log-in)"
+
+    echo "==> Applying the theme to the login screen (LightDM greeter) ..."
+    GREETER_CONF="/etc/lightdm/lightdm-gtk-greeter.conf"
+    if [ -f "$GREETER_CONF" ]; then
+        echo "    LightDM GTK greeter found — giving it the same look."
+        echo "    NOTE: the next prompt is your SUDO PASSWORD (to edit the"
+        echo "    greeter config in /etc). It is NOT a login of any kind."
+        sudo sed -i '/^theme-name=/d;/^icon-theme-name=/d' "$GREETER_CONF"
+        if grep -q '^\[greeter\]' "$GREETER_CONF" 2>/dev/null; then
+            sudo sed -i '/^\[greeter\]/a theme-name=Orchis-Dark\nicon-theme-name=YAMIS' "$GREETER_CONF"
+        else
+            printf '[greeter]\ntheme-name=Orchis-Dark\nicon-theme-name=YAMIS\n' | sudo tee -a "$GREETER_CONF" >/dev/null
+        fi
+        echo "    done: login screen now uses Orchis-Dark + YAMIS too"
+    else
+        echo "    no LightDM GTK greeter config found — skipped"
+        echo "    (if your login screen is a different greeter, set it manually)"
+    fi
     echo ""
     echo "    ONE MANUAL STEP LEFT (settings are yours to click):"
     echo "      Settings > Appearance  > Style: Orchis-Dark"
