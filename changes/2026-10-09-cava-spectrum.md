@@ -124,3 +124,11 @@ Games that render "fullscreen" as a plain screen-sized window without
 the X11 fullscreen state (some Wine titles, older native games) will
 not trigger the hide. If one shows up, a hybrid check (fullscreen flag
 OR window covering the whole screen) is the follow-up.
+
+## Addendum: autostart entries made portable
+
+Two autostart files (Polybar.desktop, Polybar overlap watcher.desktop)
+hardcoded /home/fyr in their Exec lines — they would break for any other
+username. Rewritten to Exec=sh -c '$HOME/...' so the shell expands the
+home path at login on any machine. Verified: no username or home path
+remains anywhere in the repo outside the change reports.
