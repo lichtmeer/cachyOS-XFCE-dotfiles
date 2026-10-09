@@ -15,7 +15,8 @@ Full step-by-step install guide: see [INSTALL.md](INSTALL.md)
 | `polybar/` | `config.ini`, `launch.sh`, `hide-when-overlapped.sh`, `cachyos-updates.sh` | `~/.config/polybar/` |
 | `rofi/` | `config.rasi`, `grid.rasi`, `power.rasi`, `power-buttons.rasi`, `power-menu.sh`, `power.sh`, `window.rasi` | `~/.config/rofi/` |
 | `picom/` | `picom.conf` | `~/.config/picom/` |
-| `autostart/` | `Polybar.desktop`, `picom.desktop`, `Polybar overlap watcher.desktop` | `~/.config/autostart/` |
+| `conky/` | `conky.conf`, `glance.lua`, `cava.conf`, `cava-spectrum.sh`, `weather.sh`, `spotify-status.sh` | `~/.config/conky/` |
+| `autostart/` | `Polybar.desktop`, `picom.desktop`, `Polybar overlap watcher.desktop`, `Conky glance.desktop` | `~/.config/autostart/` |
 | `changes/` | dated change reports | - |
 | `wallpapers/` | wallpaper collection, used by `rofi/wallpaper.sh` | `~/Pictures/wallpapers/` |
 
@@ -43,6 +44,7 @@ Full step-by-step install guide: see [INSTALL.md](INSTALL.md)
   when updates are available. Checks at login, then hourly.
 - **picom**: GLX backend compositor, 12px rounded window corners
 - **Plank dock**: bottom dock in the Material You pill style (custom `MaterialPill` theme in `plank/`), autostarted via `autostart/plank.desktop`.
+- **conky-glance widget**: "At a Glance" card on the right desktop edge — date headline, weather, Spotify song + progress bar with clickable prev/play/next buttons, and a live cava music spectrum between artist and progress bar while music plays. Transparent, starts after picom is up.
   (fullscreen excluded). Polybar `pseudo-transparency` must stay `false`
   (with a compositor, `true` causes black corner artifacts).
 

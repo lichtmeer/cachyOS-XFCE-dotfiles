@@ -22,9 +22,9 @@ Spotify reports status "Playing".
 | conky/conky.conf | update_interval 1 -> 0.05, card height 440 -> 480 |
 | conky/glance.lua | adds cava_read/cava_draw; weather/Spotify caches; layout shift |
 | conky/cava.conf | cava config: raw ascii output, 24 bars, 30 fps, [input] pinned to default sink |
-| conky/cava-spectrum.sh | bridge: cava -> awk (FS=";") -> cava.raw; single-instance guard |
-| conky/weather.sh | unchanged (already in repo docs) |
-| conky/spotify-status.sh | unchanged (already in repo docs) |
+| conky/cava-spectrum.sh | bridge: cava -> awk (FS=";") -> cava.raw |
+| conky/weather.sh | weather fetcher with 30 min cache (unchanged) |
+| conky/spotify-status.sh | Spotify reader via playerctl (unchanged) |
 | autostart/Conky glance.desktop | also starts the cava bridge; still waits for picom first |
 
 ## Bugs hit during the build (and their fixes)
@@ -32,7 +32,7 @@ Spotify reports status "Playing".
 1. **cava raw output is binary by default** — the bridge expected text.
    Fix: data_format = ascii in the [output] section.
 2. **awk did not split on semicolons** — only one bar survived.
-   Fix: BEGIN { FS = ";" }.
+   Fix: BEGIN { FS = ";" } in the bridge.
 3. **Weather went "unavailable"** — two stacked causes:
    - the new weather cache remembered FAILED lookups for 60s (wttr.in
      hiccup -> a minute of "unavailable"); fix: retry failures after

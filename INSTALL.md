@@ -16,7 +16,7 @@ does NOT contain is listed with its own step.
 ## 1. Packages
 
     sudo pacman -S --needed polybar picom rofi plank xdotool \
-      imagemagick pacman-contrib cachy-update alacritty \
+      imagemagick pacman-contrib cachy-update alacritty conky cava \
       noto-fonts noto-fonts-cjk ttf-nerd-fonts-symbols
 
 What each is for:
@@ -66,6 +66,7 @@ Quick block that does all of it from the repo root:
     cp plank/dock.theme ~/.local/share/plank/themes/MaterialPill/
     cp autostart/* ~/.config/autostart/
     chmod +x ~/.config/polybar/*.sh ~/.config/rofi/*.sh
+    bash conky/install.sh
 
 ## 3. GTK theme and icon set (NOT in this repo)
 
