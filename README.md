@@ -1,148 +1,97 @@
 # cachyOS-XFCE-dotfiles
 
-My CachyOS (Arch-based) + XFCE desktop, rebuilt around Polybar as a complete
-desktop shell replacement. Material You dark design, floating pill bar,
-Rofi launcher and power menu, picom compositor with rounded corners.
+My CachyOS (Arch-based) + XFCE desktop, rebuilt as a complete desktop
+shell replacement: floating Material You pill bar, rofi launcher / power
+menu / wallpaper picker / hold-and-release Alt+Tab switcher, plank dock,
+picom compositor, and a transparent glance widget with a live cava music
+spectrum and weather.
 
-## Setup
+## Install — one command
 
-Full step-by-step install guide: see [INSTALL.md](INSTALL.md)
+    git clone https://github.com/lichtmeer/cachyOS-XFCE-dotfiles
+    cd cachyOS-XFCE-dotfiles && bash install.sh
+
+The installer checks packages (installs only missing, reports outdated,
+never upgrades silently), copies all configs, applies every xfconf
+setting (keybindings, stock panel off, margins), pins cava to your audio
+output, and asks questions only when needed — your weather location
+(kept in `~/.config/conky/location` on your machine, never committed)
+and optional extras (wallpapers, YAMIS icons + Orchis-Dark theme).
+
+Safe to re-run. Details, manual remainders (theme clicks, one session
+cleanup, LightDM greeter), verification checklist and rollback: see
+[INSTALL.md](INSTALL.md).
 
 ## Layout
 
 | Folder | Contents | Install to |
 |---|---|---|
+| `install.sh` | one-command installer | run from repo root |
 | `polybar/` | `config.ini`, `launch.sh`, `hide-when-overlapped.sh`, `cachyos-updates.sh` | `~/.config/polybar/` |
-| `rofi/` | `config.rasi`, `grid.rasi`, `power.rasi`, `power-buttons.rasi`, `power-menu.sh`, `power.sh`, `window.rasi` | `~/.config/rofi/` |
+| `rofi/` | `config.rasi`, `grid.rasi`, `power.rasi`, `power-buttons.rasi`, `window.rasi`, `power-menu.sh`, `power.sh`, `wallpaper.sh`, `wallpaper-fade.sh`, `alt-tab.sh` | `~/.config/rofi/` |
 | `picom/` | `picom.conf` | `~/.config/picom/` |
-| `conky/` | `conky.conf`, `glance.lua`, `cava.conf`, `cava-spectrum.sh`, `weather.sh`, `spotify-status.sh` | `~/.config/conky/` |
-| `autostart/` | `Polybar.desktop`, `picom.desktop`, `Polybar overlap watcher.desktop`, `Conky glance.desktop` | `~/.config/autostart/` |
-| `changes/` | dated change reports | - |
+| `conky/` | `conky.conf`, `glance.lua`, `cava.conf`, `cava-spectrum.sh`, `weather.sh`, `spotify-status.sh`, `install.sh` | `~/.config/conky/` |
+| `plank/` | `dock.theme` (MaterialPill) | `~/.local/share/plank/themes/MaterialPill/` |
+| `autostart/` | `Polybar.desktop`, `Polybar overlap watcher.desktop`, `picom.desktop`, `plank.desktop`, `Conky glance.desktop` | `~/.config/autostart/` |
 | `wallpapers/` | wallpaper collection, used by `rofi/wallpaper.sh` | `~/Pictures/wallpapers/` |
+| `changes/` | dated change reports (the repo's changelog) | - |
 
 ## What it looks like
 
-- **google-top bar**: floating rounded pill, 95% width, 24pt height, 2.5%
-  horizontal offset, centered top, Material You dark tonal palette
-  (#1C1B1F surface, #A4C3FF accent). Left: power button (IEC power symbol,
-  opens the Rofi power menu) and GNOME-style workspace dots. Center: clock.
-  Right: disk, volume, RAM, CPU, update checker, tray.
-- **struthelper**: invisible full-width bar that reserves the entire top
-  row so no window ever sits beside the pill.
-- **hide-when-overlapped.sh**: watcher that hides the pill when a window
-  is dragged over it or a window goes fullscreen (F11).
-- **Rofi launcher**: compact centered list (480px) a few pixels below the
-  bar, recolored to the polybar palette, YAMIS icons, blue rounded
-  selection frame, toggled with Super+Space.
-- **Rofi window switcher** (`window.rasi`): same look as the launcher, opened with Super+Tab (`rofi -show window -theme window`). Alt+Tab cycles the list while open.
+- **Pill bar (google-top)**: floating rounded pill, 95% width, Material
+  You dark tonal palette (#1C1B1F surface, #A4C3FF accent). Left: power
+  button opening the rofi power menu, GNOME-style workspace dots.
+  Center: clock. Right: disk, volume, RAM, CPU, update checker, tray.
+- **Invisible reserve bar (struthelper)**: full-width bar that reserves
+  the top row so no window ever sits beside the pill.
+- **Fullscreen watcher (v3)**: hides the pill only while a window is
+  truly fullscreen (`_NET_WM_STATE_FULLSCREEN`, F11 or in-game); returns
+  when it ends. Windows touching the top strip — dragged or floating —
+  do NOT trigger the hide.
+- **Alt+Tab switcher** (`rofi/alt-tab.sh`): Windows-style. Hold Alt,
+  tap Tab to cycle the switcher, release Alt to focus the highlighted
+  window (~20ms commit, no Enter). Super+Tab opens the same switcher
+  with classic confirm-on-Enter.
+- **Rofi launcher**: compact centered list below the bar, recolored to
+  the polybar palette, YAMIS icons, Super+Space toggles it.
 - **Rofi power menu**: five Android-style buttons (Log out, Restart,
-  Shutdown, Suspend, Switch User) with per-entry icons, centered and
-  aligned. Destructive actions (Restart, Shutdown) show a confirmation
-  step before running. Opened from the bar's power icon.
-- **Update checker**: CachyOS logo (Nerd Font) between CPU and tray.
-  White icon when up to date; pulses white/blue with the pending count
-  when updates are available. Checks at login, then hourly.
-- **picom**: GLX backend compositor, 12px rounded window corners
-- **Plank dock**: bottom dock in the Material You pill style (custom `MaterialPill` theme in `plank/`), autostarted via `autostart/plank.desktop`.
-- **conky-glance widget**: "At a Glance" card on the right desktop edge — date headline, weather, Spotify song + progress bar with clickable prev/play/next buttons, and a live cava music spectrum between artist and progress bar while music plays. Transparent, starts after picom is up.
-  (fullscreen excluded). Polybar `pseudo-transparency` must stay `false`
-  (with a compositor, `true` causes black corner artifacts).
-
-## XFCE settings not stored in files
-
-These live in xfconf / session settings and are NOT captured by this repo.
-On a fresh install, re-apply:
-
-    # Block the XFCE panel from starting (failsafe session)
-    xfconf-query -c xfce4-session -p /sessions/Failsafe/Client2_Command -n \
-      -t string -s /bin/true
-
-    # Remove existing panels
-    xfconf-query -c xfce4-panel -p /panels -n -t int -s 0
-
-    # Screen-edge margins: 8px left/right/bottom, 0 top
-    for side in left right bottom; do
-      xfconf-query -c xfwm4 -p /general/margin_$side -n -t int -s 8
-    done
-    xfconf-query -c xfwm4 -p /general/margin_top -n -t int -s 0
-
-Manual steps:
-
-- Keyboard shortcut Super+Space -> `rofi -show drun`
-  (Settings -> Keyboard -> Application Shortcuts)
-- Autostart entries (Settings -> Session and Startup):
-  - polybar: `~/.config/polybar/launch.sh`
-  - picom: `picom -b`
-  - watcher: `~/.config/polybar/hide-when-overlapped.sh`
-- Clear saved sessions once after setup (Session and Startup -> Sessions),
-  so the watcher does not start twice.
-
-## Login screen (LightDM GTK greeter)
-
-Themed to match the desktop, but stored in system files - not in this repo.
-On a fresh install, re-apply:
-
-    sudo cp -r ~/.themes/Orchis-Dark /usr/share/themes/
-
-Then in /etc/lightdm/lightdm-gtk-greeter.conf, [greeter] section:
-
-    theme-name = Orchis-Dark
-    icon-theme-name = Adwaita
-    font-name = Noto Sans 11
-    background = #1C1B1F
+  Shutdown, Suspend, Switch User); destructive actions confirm first.
+- **Wallpaper picker**: thumbnails + crossfade on switch.
+- **Update checker**: white CachyOS icon when up to date; pulses
+  white/blue with a count when updates are pending. Checks at login,
+  then hourly; left-click runs the guided updater.
+- **conky-glance widget**: transparent "At a Glance" card on the right
+  edge — date headline, weather (wttr.in, private location file), and
+  Spotify: title, artist, clickable prev/play/pause/next buttons,
+  progress bar, and a live 24-bar cava music spectrum while music
+  plays. Bars render accent blue on peaks, soft white otherwise.
+  Shadow-free (picom excludes it), starts after picom is up.
+- **picom**: GLX compositor, 12px rounded window corners.
+- **Plank dock**: bottom dock, MaterialPill theme.
 
 ## Dependencies
 
-    sudo pacman -S polybar picom rofi plank xdotool alacritty \
-      ttf-nerd-fonts-symbols noto-fonts noto-fonts-cjk
+Installed automatically by `install.sh`: polybar, picom, rofi, plank,
+xdotool, imagemagick, pacman-contrib, cachy-update, alacritty, conky,
+cava, playerctl, curl, noto-fonts, noto-fonts-cjk,
+ttf-nerd-fonts-symbols.
 
-Icon theme: "Yet Another Monochrome Icon Set" (YAMIS) for tray icons
-(nm-applet) and Rofi icons. Fonts used: Noto Sans, Symbols Nerd Font,
-Noto Sans CJK TC (the CJK font provides the workspace dots).
+The glance widget deliberately uses no icon-font glyphs — its music
+buttons are drawn as geometric shapes, so nothing can render as a
+placeholder box.
 
 ## Known caveats
 
-- Geometry is hard-coded for 1920x1080 (VirtualBox "Virtual-1").
-  Changing the screen resolution requires recalculating bar offsets,
-  the watcher's bar rectangle, and rofi width/position.
-- Network module is disabled (wired ethernet handled by nm-applet tray icon).
-- Manually dragged windows can still touch the screen edges; margins only
-  affect maximized windows. The watcher hides the pill if a window is
-  dragged over it.
-- Switch User in the power menu depends on LightDM's `dm-tool`; on other
-  display managers it silently does nothing.
+- Geometry is tuned for 1920x1080; other resolutions need bar offsets
+  and rofi width/position adjusted.
+- Polybar `pseudo-transparency` must stay `false` (picom is running).
+- Games that go "fullscreen" without the X11 fullscreen state (some
+  Wine/older titles) do not trigger the bar hide.
+- Switch User depends on LightDM's `dm-tool`.
 
-## GTK theme
+## History
 
-Orchis (Material Design) dark variant by vinceliuice. Not stored in this
-repo (re-downloadable). Restore with:
-
-    git clone https://github.com/vinceliuice/Orchis-theme.git ~/Orchis-theme
-    ~/Orchis-theme/install.sh --theme default --color dark
-
-Then set it in Settings -> Appearance (Style: Orchis-Dark) AND
-Settings -> Window Manager (Style: Orchis-Dark).
-See changes/2026-09-27-gtk-theme.md for details.
-
-## Update checker module - extra notes
-
-The polybar update module (`polybar/cachyos-updates.sh`) needs two packages
-that are not part of the dotfiles themselves:
-
-    sudo pacman -S cachy-update pacman-contrib
-
-- `pacman-contrib` provides `checkupdates`, which the module uses to count
-  pending updates. Without it, the icon stays white and quiet.
-- `cachy-update` is the guided updater that opens when you left-click the icon
-  (runs in alacritty: `alacritty -e cachy-update`).
-
-Behavior summary:
-
-- Checks at login, then once every hour. Right-click the icon to re-check
-  immediately; left-click to run the updater.
-- White CachyOS icon = up to date. Pulsing white/blue icon with a count =
-  updates available.
-
-The files `~/.cache/polybar-cachyos-updates.*` (`.state`, `.stamp`, `.force`)
-are throwaway runtime data created by the module. They are safe to delete at
-any time and must never be committed to this repo.
+Every change is documented in `changes/` — dated reports with symptoms,
+root causes and fixes (boot races, wttr.in localization, cava raw
+output, the weather timer, the Alt+Tab keybinding lesson, portability
+fixes). Start with the oldest and read up.
