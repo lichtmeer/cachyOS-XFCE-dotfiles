@@ -288,31 +288,14 @@ function conky_main()
     cairo_line_to(cr, W - PAD, DIV1_Y)
     cairo_stroke(cr)
 
+    -- weather (plain centered text; removed nerd-font icon that showed as [])
     local temp, desc = get_weather()
-    local icon = weather_icon(desc)
     if temp then
         local label = (temp or '') .. '  ' .. (desc or '')
-        local gap = 8
-        local icon_w, icon_xb = text_ink(cr, icon, 'Symbols Nerd Font', 16)
-        local label_w = text_extents(cr, label, 'Noto Sans', 14)
-        local total = icon_w + gap + label_w
-        local x0 = (W - total) / 2
-        local _, iyb, _, ih = text_ink_box(cr, icon, 'Symbols Nerd Font', 16)
-        local _, tyb, _, th = text_ink_box(cr, label, 'Noto Sans', 14)
-        local icon_center = iyb + ih/2
-        local text_center = tyb + th/2
-        local icon_y = WX_Y + (text_center - icon_center)
-        draw_text(cr, icon, x0 - icon_xb, icon_y, 'Symbols Nerd Font', 16, C.secondary, nil, 'left')
-        draw_text(cr, label, x0 + icon_w + gap, WX_Y, pick_font(label, 'Noto Sans'), 14, C.secondary, nil, 'left')
+        draw_text(cr, label, W/2, WX_Y, pick_font(label, 'Noto Sans'), 14, C.secondary, nil, 'center')
     else
         draw_text(cr, 'weather unavailable', W/2, WX_Y, 'Noto Sans', 13, C.muted, nil, 'center')
     end
-
-    set_color(cr, { 1, 1, 1, 0.35 })
-    cairo_set_line_width(cr, 1)
-    cairo_move_to(cr, PAD, DIV2_Y)
-    cairo_line_to(cr, W - PAD, DIV2_Y)
-    cairo_stroke(cr)
 
     local sp = get_spotify()
     if sp then

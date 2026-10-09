@@ -34,3 +34,23 @@ rounded bars in cairo (accent blue above 60, muted white below).
 ## Layout
 
 CAVA_Y = 316 (height 28), PROG_Y = 354, BTN_Y = 416, card height 480.
+
+## Addendum: weather icon removed
+
+### Symptom
+The weather line showed an empty box "[]" before the text. The icon came
+from Symbols Nerd Font; when the glyph is not available on a system, it
+renders as a placeholder box instead of failing visibly.
+
+### Fix
+Removed the icon from the weather line entirely. The weather info itself
+("+11°C  Light drizzle") is enough; it is now plain centered Noto Sans
+text, same font as the rest of the widget, so nothing can render as a
+box on any system. The unused weather_icon() helper stays in glance.lua
+(harmless); the drawing code no longer calls it.
+
+### Note
+The first patch attempt anchored on section comments that no longer
+existed in the rewritten file; it failed safely with no changes. The
+working patch anchors on code lines that exist in every version:
+the get_weather() call and the get_spotify() call after it.
