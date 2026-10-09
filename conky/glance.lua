@@ -191,7 +191,7 @@ end
 local weather_cache = { time = 0, temp = nil, desc = nil }
 
 local function get_weather()
-    local now = os.clock()
+    local now = os.time()
     if now - weather_cache.time < (weather_cache.temp and 60 or 10) then
         return weather_cache.temp, weather_cache.desc
     end
@@ -218,7 +218,7 @@ end
 local spotify_cache = { time = 0, data = nil }
 
 local function get_spotify()
-    local now = os.clock()
+    local now = os.time()
     if now - spotify_cache.time < 1 then
         return spotify_cache.data
     end
