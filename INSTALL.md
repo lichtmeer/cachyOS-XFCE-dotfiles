@@ -48,6 +48,7 @@ Copy everything to its destination, keeping file names:
 | `rofi/power.sh` | `~/.config/rofi/power.sh` (chmod +x) |
 | `rofi/wallpaper.sh` | `~/.config/rofi/wallpaper.sh` (chmod +x) |
 | `rofi/wallpaper-fade.sh` | `~/.config/rofi/wallpaper-fade.sh` (chmod +x) |
+| `rofi/alt-tab.sh` | `~/.config/rofi/alt-tab.sh` (chmod +x) — hold-Alt-tap-Tab-release Alt window switching |
 | `picom/picom.conf` | `~/.config/picom/picom.conf` |
 | `plank/dock.theme` | `~/.local/share/plank/themes/MaterialPill/dock.theme` |
 | `autostart/Polybar.desktop` | `~/.config/autostart/Polybar.desktop` |
