@@ -11,51 +11,73 @@ cava music spectrum and weather.
     git clone https://github.com/lichtmeer/cachyOS-XFCE-dotfiles
     cd cachyOS-XFCE-dotfiles && bash install.sh
 
-That is the whole install. It:
+Never with sudo — the installer refuses root runs. The only elevated
+parts are the internal `sudo pacman` / greeter-config calls, each
+explained in the output right before the password prompt.
 
-- checks every package (installs only missing ones, reports outdated,
-  never upgrades without asking)
-- copies all configs (polybar, rofi, picom, conky, plank theme,
-  autostart) and fixes paths for the current user
-- applies all xfconf settings (Alt+Tab wrapper, Super+Tab, Super+Space,
-  stock panel off, screen margins)
-- pins cava to your default audio output
-- asks questions only when needed: weather location (once, stays in
-  `~/.config/conky/location`, never committed) and optional extras
-  (wallpapers, YAMIS icons + Orchis-Dark theme from GitHub)
+## What the installer does, step by step
 
-Re-running it is safe: installed packages are skipped, existing private
-files are kept, configs are just overwritten with the repo versions.
+1. **System packages** — checks every package, one line per package
+   (ok / MISSING / outdated). Installs only missing ones with
+   `pacman -S --needed` (its normal output shows); reports outdated
+   ones without touching them.
+2. **Spotify question** — asked on every run, even when installed
+   (the glance widget's music section needs a Spotify player via
+   playerctl; without it that section stays empty). Yes is always
+   safe — `--needed` never reinstalls.
+3. **Polybar / Rofi / Picom / Conky / Plank** — copies all configs,
+   fixes paths for the current user, pins cava to your default audio
+   output (defers gracefully if no audio server is running yet).
+4. **XFCE settings** — applies all xfconf settings:
+   - keybindings: Alt+Tab (hold-and-release wrapper), Super+Tab
+     (rofi window switcher), Super+Space (launcher), Super+T
+     (alacritty), Super+< (wallpaper picker)
+   - xfwm4's own Tab key mappings unbound (so rofi receives the keys)
+   - stock panel off (killed first, no restart popup)
+   - xfwm4 compositor off — picom owns the screen
+   - workspace margins: top 0, left/right 55, bottom 15
+5. **Wallpapers** — asks, copies to ~/Pictures/wallpapers, then sets
+   one at random so the Super+< switcher works from the first login.
+6. **Icons + theme** — asks; when yes: downloads YAMIS (original
+   author's Bitbucket source) and Orchis-Dark, installs them, then
+   applies GTK theme + window style + icons via xfconf automatically,
+   and writes the same theme into the LightDM GTK greeter config
+   (sudo, explained; skipped with a note if not present).
+7. **Logout offer** — explains why (session settings and autostart
+   entries apply on the next login) and asks; yes logs out after a
+   3-second warning.
+
+Weather location is asked once (only if not already saved) and kept
+in `~/.config/conky/location` on your machine — never committed.
+
+Re-running the installer is safe: installed packages are skipped,
+private files are kept, configs are overwritten with the repo versions.
 
 ## What remains manual (and why)
 
-1. **Set the theme after the optional theme step**: Settings > Appearance
-   > Style: Orchis-Dark, Icons: YAMIS; Window Manager > Style: Orchis-Dark.
-   An installer should put files on disk, not silently switch your theme.
-2. **Once: Settings > Session and Startup > Sessions > clear saved
-   sessions.** Old sessions can double-start the watchers.
-3. **Login screen (LightDM, system-side, sudo)** — deliberate, it edits
-   system files:
-       sudo cp -r ~/.themes/Orchis-Dark /usr/share/themes/
-   In `/etc/lightdm/lightdm-gtk-greeter.conf`, `[greeter]` section:
-       theme-name = Orchis-Dark
-       icon-theme-name = Adwaita
-       font-name = Noto Sans 11
-       background = #1C1B1F
+1. **Once: Settings > Session and Startup > Sessions > clear saved
+   sessions.** Old sessions can double-start the watchers. (Deliberate:
+   wiping session state automatically is riskier than one click.)
 
 ## Verification — log out and back in, then check
 
 - [ ] Pill bar at the top (workspaces, clock, system info); stock panel gone
 - [ ] Windows stop below the bar; F11 hides the bar, leaving fullscreen
       brings it back; windows on the top strip do NOT hide it
+- [ ] Maximized windows keep 55px from the left/right screen edges
 - [ ] Plank dock at the bottom (pick MaterialPill theme once)
 - [ ] Super+Space opens the launcher; pressing again closes it
 - [ ] Alt+Tab: hold Alt, tap Tab, release Alt -> window switches
+- [ ] Super+Tab opens the rofi window switcher (Enter confirms)
+- [ ] Super+T opens alacritty
+- [ ] Super+< opens the wallpaper picker; previews and crossfade work
 - [ ] Power button in the bar opens the rofi power menu
-- [ ] Wallpaper picker shows previews and crossfades on switch
 - [ ] Update icon: white = up to date, pulsing blue + count = updates
 - [ ] Glance widget on the right: date, weather, Spotify with clickable
       buttons, cava spectrum while music plays
+- [ ] Theme is Orchis-Dark with YAMIS icons everywhere (applied
+      automatically — nothing to click); after a reboot the login
+      screen matches
 
 ## How the pieces work (reference)
 
@@ -76,16 +98,15 @@ files are kept, configs are just overwritten with the repo versions.
   `true` causes black corner artifacts).
 - Games that go "fullscreen" without the X11 fullscreen state (some
   Wine/older titles) do not trigger the bar hide.
-- The Alt+Tab binding is stored in xfconf (machine-side, not files);
-  `install.sh` applies it, this doc records it.
+- The keybindings are stored in xfconf (machine-side, not files);
+  `install.sh` applies them, this doc records them.
 
 ## Rollback pointers
 
-- Greeter: remove the added lines from
-  `/etc/lightdm/lightdm-gtk-greeter.conf`, optionally
-  `sudo rm -r /usr/share/themes/Orchis-Dark`.
 - XFCE panel: delete the failsafe override
   (`xfconf-query -c xfce4-session -p /sessions/Failsafe/Client2_Command -r`)
   and re-add a panel in xfconf.
+- Greeter: remove the `theme-name` / `icon-theme-name` lines the
+  installer added to `/etc/lightdm/lightdm-gtk-greeter.conf`.
 - Everything else: delete the copied files from `~/.config` — all
   user-side changes are just files in `~/.config` and `~/.local`.

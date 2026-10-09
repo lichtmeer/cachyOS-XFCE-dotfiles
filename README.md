@@ -1,26 +1,52 @@
 # cachyOS-XFCE-dotfiles
 
 My CachyOS (Arch-based) + XFCE desktop, rebuilt as a complete desktop
-shell replacement: floating Material You pill bar, rofi launcher / power
-menu / wallpaper picker / hold-and-release Alt+Tab switcher, plank dock,
-picom compositor, and a transparent glance widget with a live cava music
-spectrum and weather.
+shell replacement: floating Material You pill bar, rofi launcher /
+power menu / wallpaper picker / hold-and-release Alt+Tab switcher,
+plank dock, picom compositor, and a transparent glance widget with a
+live cava music spectrum and weather.
 
 ## Install — one command
 
     git clone https://github.com/lichtmeer/cachyOS-XFCE-dotfiles
     cd cachyOS-XFCE-dotfiles && bash install.sh
 
-The installer checks packages (installs only missing, reports outdated,
-never upgrades silently), copies all configs, applies every xfconf
-setting (keybindings, stock panel off, margins), pins cava to your audio
-output, and asks questions only when needed — your weather location
-(kept in `~/.config/conky/location` on your machine, never committed)
-and optional extras (wallpapers, YAMIS icons + Orchis-Dark theme).
+The installer:
 
-Safe to re-run. Details, manual remainders (theme clicks, one session
-cleanup, LightDM greeter), verification checklist and rollback: see
-[INSTALL.md](INSTALL.md).
+- checks every package, one line per package (installs only missing
+  ones, reports outdated, never upgrades silently; pacman shows its
+  normal output during install)
+- asks the Spotify question (every run, even when installed — the
+  glance widget's music section needs a Spotify player; yes is always
+  safe, `--needed` never reinstalls)
+- copies all configs, fixes paths for the current user
+- applies every xfconf setting: keybindings (Alt+Tab wrapper,
+  Super+Tab, Super+Space, Super+T, Super+<), stock panel off,
+  workspace margins (top 0, left/right 55, bottom 15)
+- switches xfwm4's compositor off so picom owns the screen
+- pins cava to your audio output (defers gracefully if no server yet)
+- asks your weather location once (kept in `~/.config/conky/location`
+  on your machine, never committed)
+- asks before copying wallpapers, then sets a random one so the
+  Super+< switcher works from the first login
+- asks before installing YAMIS icons + Orchis-Dark theme — then
+  applies theme, window style and icons automatically, and themes the
+  LightDM login screen too (when its config exists)
+- offers a confirmed logout at the end (session settings and autostart
+  entries apply on the next login)
+
+Safe to re-run: installed packages are skipped, private files are kept,
+configs are overwritten with the repo versions.
+
+Details, the one remaining manual step, verification checklist and
+rollback: see [INSTALL.md](INSTALL.md).
+
+> **No GitHub account needed.** Plain `git clone` works anonymously on
+> this public repo. Do not use `gh repo clone` on a fresh machine — the
+> GitHub CLI demands a login even for public repos. And never run the
+> installer with `sudo` — it refuses root runs anyway; the only
+> elevated parts are the internal `sudo pacman` / greeter-config calls,
+> each explained before the password prompt.
 
 ## Layout
 
@@ -56,7 +82,7 @@ cleanup, LightDM greeter), verification checklist and rollback: see
   the polybar palette, YAMIS icons, Super+Space toggles it.
 - **Rofi power menu**: five Android-style buttons (Log out, Restart,
   Shutdown, Suspend, Switch User); destructive actions confirm first.
-- **Wallpaper picker**: thumbnails + crossfade on switch.
+- **Wallpaper picker**: thumbnails + crossfade on switch (Super+<).
 - **Update checker**: white CachyOS icon when up to date; pulses
   white/blue with a count when updates are pending. Checks at login,
   then hourly; left-click runs the guided updater.
@@ -66,7 +92,8 @@ cleanup, LightDM greeter), verification checklist and rollback: see
   progress bar, and a live 24-bar cava music spectrum while music
   plays. Bars render accent blue on peaks, soft white otherwise.
   Shadow-free (picom excludes it), starts after picom is up.
-- **picom**: GLX compositor, 12px rounded window corners.
+- **picom**: GLX compositor, 12px rounded window corners (xfwm4's own
+  compositor is switched off).
 - **Plank dock**: bottom dock, MaterialPill theme.
 
 ## Dependencies
@@ -74,7 +101,8 @@ cleanup, LightDM greeter), verification checklist and rollback: see
 Installed automatically by `install.sh`: polybar, picom, rofi, plank,
 xdotool, imagemagick, pacman-contrib, cachy-update, alacritty, conky,
 cava, playerctl, curl, noto-fonts, noto-fonts-cjk,
-ttf-nerd-fonts-symbols.
+ttf-nerd-fonts-symbols. spotify-launcher is asked about separately
+(official repos only — no AUR anywhere).
 
 The glance widget deliberately uses no icon-font glyphs — its music
 buttons are drawn as geometric shapes, so nothing can render as a
@@ -88,16 +116,12 @@ placeholder box.
 - Games that go "fullscreen" without the X11 fullscreen state (some
   Wine/older titles) do not trigger the bar hide.
 - Switch User depends on LightDM's `dm-tool`.
+- Theme/icons and the login screen theme apply automatically; if your
+  machine uses a greeter other than LightDM's GTK greeter, that one is
+  skipped with a note.
 
 ## History
 
 Every change is documented in `changes/` — dated reports with symptoms,
-root causes and fixes (boot races, wttr.in localization, cava raw
-output, the weather timer, the Alt+Tab keybinding lesson, portability
-fixes). Start with the oldest and read up.
-
-> **No GitHub account needed.** Plain `git clone` works anonymously on
-> this public repo. Do not use `gh repo clone` on a fresh machine — the
-> GitHub CLI demands a login even for public repos. And never run the
-> installer with `sudo` — the only elevated part is the internal
-> `sudo pacman` call, which asks for your sudo password once.
+root causes and fixes, plus the full bug-fix report for v1.0 → v1.3.
+Start with the oldest and read up.

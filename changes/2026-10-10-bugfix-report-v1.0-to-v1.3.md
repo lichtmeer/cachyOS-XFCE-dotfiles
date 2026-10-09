@@ -321,3 +321,33 @@ confirmed.
   (the .git poison) only appear the second time.
 - **The user's machine is the source of truth:** sandbox first, VM
   second, push only after both agree.
+
+## Addendum: README.md + INSTALL.md rewritten to match the installer
+
+### Symptom
+The docs predated the v1.2/v1.3 installer work: they still told the
+user to click the theme into Settings > Appearance manually, to set up
+the LightDM greeter by hand (with a wrong icon-theme value), and knew
+nothing about the Spotify permission gate, the confirmed logout
+offer, Super+T, Super+Tab, the workspace margins or the visible
+step 1.
+
+### Fix
+Both files rewritten to document what the installer actually does:
+- README: install command + a plain list of installer behavior
+  (visible package check, Spotify every-run question, xfconf
+  settings incl. margins 0/55/55/15, compositor handover, random
+  wallpaper, auto theme + login screen theming, logout offer),
+  layout table, look section, dependencies, caveats, history.
+- INSTALL: 7-step "what the installer does, step by step", the ONE
+  remaining manual item (clear saved sessions, with why), expanded
+  verification checklist (margins, Super+Tab, Super+T, Super+<,
+  auto-applied theme + login screen), how-the-pieces-work table,
+  rollback pointers matching what the installer really writes.
+Stale manual-theme and manual-greeter instructions removed.
+Docs-only change: install.sh untouched.
+
+### Testing
+Consistency checks: Spotify gate in both files, Super+T in both,
+margins 55 present, "remains manual" = 1 item, zero stale claims
+(manual theme clicks, Adwaita greeter value, old quotes all gone).
