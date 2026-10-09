@@ -16,7 +16,7 @@ produces exactly what was tested.
 ## Bugs found (and fixed)
 
 ### Bug 1: personal path still in the autostart step
-An earlier audit claimed to remove the `sed s|/home/fyr|$HOME|g` line
+An earlier audit claimed to remove the `sed s|/home/userfolder|$HOME|g` line
 from install.sh, but its own sed command failed silently — the
 delimiter (|) collided with the | characters inside the pattern, so
 the line survived while the script reported success. Replaced with a
