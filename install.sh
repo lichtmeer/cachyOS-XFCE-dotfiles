@@ -14,11 +14,29 @@ echo " CachyOS + XFCE desktop — one-command setup"
 echo " user: $(whoami)   host: $(uname -n)"
 echo "=========================================="
 
-echo "==> [1/9] System packages (sudo) ..."
-sudo pacman -S --needed --noconfirm \
-    polybar picom rofi plank xdotool imagemagick pacman-contrib \
-    cachy-update alacritty conky cava playerctl curl \
-    noto-fonts noto-fonts-cjk ttf-nerd-fonts-symbols
+echo "==> [1/9] System packages ..."
+# check each package: installed+current = skip, installed+outdated = report,
+# missing = install
+PKGS="polybar picom rofi plank xdotool imagemagick pacman-contrib cachy-update alacritty conky cava playerctl curl noto-fonts noto-fonts-cjk ttf-nerd-fonts-symbols"
+MISSING=""; OUTDATED=""
+for p in $PKGS; do
+    if ! pacman -Qi "$p" >/dev/null 2>&1; then
+        MISSING="$MISSING $p"
+    elif [ -n "$(checkupdates 2>/dev/null | grep -F " $p " )" ] || \
+         [ -n "$(checkupdates 2>/dev/null | grep -F "/$p ")" ]; then
+        OUTDATED="$OUTDATED $p"
+    fi
+done
+if [ -n "$OUTDATED" ]; then
+    echo "    outdated (will NOT be touched):$OUTDATED"
+    echo "    (run 'sudo pacman -Syu' yourself whenever you like)"
+fi
+if [ -n "$MISSING" ]; then
+    echo "    installing missing:$MISSING"
+    sudo pacman -S --needed --noconfirm $MISSING
+else
+    echo "    all packages already installed — nothing to do"
+fi
 echo "    done"
 
 echo "==> [2/9] Polybar ..."
