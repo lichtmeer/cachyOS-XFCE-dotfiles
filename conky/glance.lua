@@ -1,6 +1,7 @@
 -- conky-glance: Material You "At a Glance" desktop widget
 -- Transparent variant: white text directly on the wallpaper.
--- Includes a cava music spectrum between artist and progress bar.
+-- cava music spectrum between artist and progress bar.
+-- Polish pass: gradient dividers, softer hover, even spacing.
 
 local cairo = require('cairo')
 local cairo_xlib = require('cairo_xlib')
@@ -9,6 +10,7 @@ local SLANT_NORMAL = 0
 local WEIGHT_NORMAL = 0
 local WEIGHT_BOLD  = 1
 
+-- palette
 local C = {
     surface   = { 0x1C/255, 0x1B/255, 0x1F/255, 1.0 },
     surface2  = { 0x2A/255, 0x29/255, 0x30/255, 1.0 },
@@ -63,6 +65,19 @@ end
 
 local function set_color(cr, c)
     cairo_set_source_rgba(cr, c[1], c[2], c[3], c[4] or 1)
+end
+
+-- divider that fades out at both ends (soft gradient line)
+local function soft_divider(cr, x1, x2, y)
+    local pat = cairo_pattern_create_linear(x1, y, x2, y)
+    cairo_pattern_add_color_stop_rgba(pat, 0.0,  1, 1, 1, 0.0)
+    cairo_pattern_add_color_stop_rgba(pat, 0.5,  1, 1, 1, 0.35)
+    cairo_pattern_add_color_stop_rgba(pat, 1.0,  1, 1, 1, 0.0)
+    cairo_set_source(cr, pat)
+    cairo_move_to(cr, x1, y)
+    cairo_line_to(cr, x2, y)
+    cairo_stroke(cr)
+    cairo_pattern_destroy(pat)
 end
 
 local function cava_draw(cr, x, y, w, h)
@@ -137,26 +152,6 @@ local function text_extents(cr, txt, font, size)
     return w
 end
 
-local function text_ink(cr, txt, font, size)
-    cairo_select_font_face(cr, font, SLANT_NORMAL, WEIGHT_NORMAL)
-    cairo_set_font_size(cr, size)
-    local te = cairo_text_extents_t:create()
-    cairo_text_extents(cr, txt, te)
-    local w, xb = te.width, te.x_bearing
-    te = nil
-    return w, xb
-end
-
-local function text_ink_box(cr, txt, font, size)
-    cairo_select_font_face(cr, font, SLANT_NORMAL, WEIGHT_NORMAL)
-    cairo_set_font_size(cr, size)
-    local te = cairo_text_extents_t:create()
-    cairo_text_extents(cr, txt, te)
-    local xb, yb, w, h = te.x_bearing, te.y_bearing, te.width, te.height
-    te = nil
-    return xb, yb, w, h
-end
-
 local function pick_font(txt, base)
     if txt and txt:find('[\128-\255]') then
         return 'Noto Sans CJK TC'
@@ -205,16 +200,6 @@ local function get_weather()
     return weather_cache.temp, weather_cache.desc
 end
 
-local function weather_icon(desc)
-    local d = (desc or ''):lower()
-    if d:find('rain')  or d:find('drizzle') or d:find('shower') then return '\u{f73d}' end
-    if d:find('snow')  or d:find('sleet')   or d:find('blizzard') then return '\u{f2dc}' end
-    if d:find('thunder') or d:find('storm') then return '\u{f0e7}' end
-    if d:find('fog')   or d:find('mist')    or d:find('haze') then return '\u{f75f}' end
-    if d:find('clear') or d:find('sunny') then return '\u{f185}' end
-    return '\u{f0c2}'
-end
-
 local spotify_cache = { time = 0, data = nil }
 
 local function get_spotify()
@@ -244,15 +229,15 @@ end
 -- ---------- layout constants -----------------------------------------------
 
 local CLOCK_Y    = 108
-local DIV1_Y     = 170
-local WX_Y       = 200
-local DIV2_Y     = 228
-local SP_TITLE_Y = 268
-local SP_ART_Y   = 296
-local CAVA_Y     = 316
+local DIV1_Y     = 172
+local WX_Y       = 204
+local DIV2_Y     = 230
+local SP_TITLE_Y = 270
+local SP_ART_Y   = 298
+local CAVA_Y     = 318
 local CAVA_H     = 28
-local PROG_Y     = 354
-local BTN_Y      = 416
+local PROG_Y     = 356
+local BTN_Y      = 418
 local BTN_R      = 20
 local BTN_SEP    = 76
 
@@ -279,30 +264,32 @@ function conky_main()
     local date_s = days[os.date('*t').wday] .. ', '
         .. months[os.date('*t').month] .. ' ' .. os.date('%d')
 
+    -- date headline, light weight, centered
     draw_text(cr, date_s, W/2, CLOCK_Y, 'Noto Sans', 28, C.text,
         WEIGHT_NORMAL, 'center')
 
-    set_color(cr, { 1, 1, 1, 0.35 })
+    -- divider 1: soft gradient, fades at the edges
     cairo_set_line_width(cr, 1)
-    cairo_move_to(cr, PAD, DIV1_Y)
-    cairo_line_to(cr, W - PAD, DIV1_Y)
-    cairo_stroke(cr)
+    soft_divider(cr, PAD, W - PAD, DIV1_Y)
 
-    -- weather (plain centered text; removed nerd-font icon that showed as [])
+    -- weather: plain centered text, slightly stronger presence
     local temp, desc = get_weather()
     if temp then
         local label = (temp or '') .. '  ' .. (desc or '')
-        draw_text(cr, label, W/2, WX_Y, pick_font(label, 'Noto Sans'), 14, C.secondary, nil, 'center')
+        draw_text(cr, label, W/2, WX_Y, pick_font(label, 'Noto Sans'), 14.5, C.secondary, nil, 'center')
     else
         draw_text(cr, 'weather unavailable', W/2, WX_Y, 'Noto Sans', 13, C.muted, nil, 'center')
     end
 
+    -- divider 2: soft gradient
+    soft_divider(cr, PAD, W - PAD, DIV2_Y)
+
+    -- spotify
     local sp = get_spotify()
     if sp then
         draw_text(cr, sp.title, W/2, SP_TITLE_Y, pick_font(sp.title, 'Noto Sans'), 16, C.text, nil, 'center', W - 2*PAD)
         draw_text(cr, sp.artist, W/2, SP_ART_Y, pick_font(sp.artist, 'Noto Sans'), 13, C.muted, nil, 'center', W - 2*PAD)
 
-        -- cava spectrum between artist and progress bar
         if sp.status == 'Playing' then
             cava_draw(cr, PAD + 4, CAVA_Y, W - 2*PAD - 8, CAVA_H)
         end
@@ -337,9 +324,10 @@ function conky_main()
         local cx = W/2 - BTN_SEP
         for i = 1, 3 do
             local bx = cx + (i - 1) * BTN_SEP
+            -- softer hover: gentle wash instead of a hard pill
             if buttons.hover == i then
                 rounded(cr, bx - BTN_R, BTN_Y - BTN_R, 2*BTN_R, 2*BTN_R, BTN_R)
-                set_color(cr, { 1, 1, 1, 0.25 })
+                set_color(cr, { 1, 1, 1, 0.12 })
                 cairo_fill(cr)
             end
             local icol = (buttons.hover == i) and C.text or C.secondary
@@ -347,7 +335,6 @@ function conky_main()
             buttons[i] = { x = bx - BTN_R, y = BTN_Y - BTN_R, w = 2*BTN_R, h = 2*BTN_R, action = actions[i] }
         end
     else
-        draw_text(cr, '\u{f001}', W/2, SP_TITLE_Y, 'Symbols Nerd Font', 20, C.muted, nil, 'center')
         draw_text(cr, 'Nothing playing', W/2, SP_ART_Y + 6, 'Noto Sans', 13, C.muted, nil, 'center')
     end
 

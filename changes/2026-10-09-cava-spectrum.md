@@ -54,3 +54,19 @@ The first patch attempt anchored on section comments that no longer
 existed in the rewritten file; it failed safely with no changes. The
 working patch anchors on code lines that exist in every version:
 the get_weather() call and the get_spotify() call after it.
+
+## Addendum: design polish pass
+
+Kept the transparent Google "At a Glance" look, refined the details:
+
+- Dividers now fade out at both ends (linear alpha gradient, peak 0.35)
+  instead of hard full-width lines.
+- Hover highlight on the music buttons is a soft wash (white at 12%
+  alpha) instead of the harder 25% pill.
+- Weather text bumped to 14.5pt to hold the line without its icon.
+- Section spacing evened out a few pixels (DIV1_Y 170->172, WX_Y
+  200->204, DIV2_Y 228->230, and the music block shifted down ~2px).
+- Removed the nerd-font music-note placeholder from the "Nothing
+  playing" state (same [] risk as the weather icon had).
+
+The cava spectrum, palette, fonts, and all behavior are unchanged.
