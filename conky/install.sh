@@ -23,6 +23,19 @@ cp "$SRC/cava.conf"          "$CFG/"
 cp "$SRC/cava-spectrum.sh"   "$CFG/"
 chmod +x "$CFG/weather.sh" "$CFG/spotify-status.sh" "$CFG/cava-spectrum.sh"
 
+echo "==> Weather location ..."
+if [ -f "$CFG/location" ]; then
+    echo "    keeping existing location (private, never committed)"
+else
+    read -r -p "    Your weather location for wttr.in (e.g. city name or zip code; empty = auto-detect): " LOC
+    if [ -n "$LOC" ]; then
+        printf '%s' "$LOC" > "$CFG/location"
+        echo "    saved to $CFG/location (private; this file is never committed)"
+    else
+        echo "    no location given — wttr.in will auto-detect by IP"
+    fi
+fi
+
 echo "==> Pinning cava to your default audio output ..."
 SINK=$(pactl info | grep 'Default Sink' | awk '{print $3}')
 if [ -n "$SINK" ]; then

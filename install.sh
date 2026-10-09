@@ -68,7 +68,7 @@ echo "    done (pick 'MaterialPill' in plank's preferences once)"
 echo "==> [7/9] Autostart + keybindings ..."
 mkdir -p ~/.config/autostart
 for f in autostart/*.desktop; do
-    sed "s|/home/fyr|$HOME|g" "$f" > ~/.config/autostart/"$(basename "$f")"
+    cp "$f" ~/.config/autostart/"$(basename "$f")"
 done
 xfconf-query -c xfce4-keyboard-shortcuts -p /xfwm4/switch_window_key -t string -s "" 2>/dev/null || \
     xfconf-query -c xfce4-keyboard-shortcuts -p /xfwm4/switch_window_key -n -t string -s ""
