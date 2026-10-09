@@ -99,6 +99,7 @@ echo "==> XFCE settings (stock panel off, screen margins, launcher key) ..."
 xfconf-query -c xfce4-session -p /sessions/Failsafe/Client2_Command -n -t string -s /bin/true 2>/dev/null || \
     xfconf-query -c xfce4-session -p /sessions/Failsafe/Client2_Command -t string -s /bin/true
 # remove existing panels
+killall -q xfce4-panel 2>/dev/null || true
 xfconf-query -c xfce4-panel -p /panels -n -t int -s 0 2>/dev/null || true
 # screen-edge margins: 8px left/right/bottom, 0 top
 for side in left right bottom; do
@@ -142,11 +143,13 @@ if [ "$THEME" = "y" ] || [ "$THEME" = "Y" ]; then
         echo "    Orchis download failed (offline? skipped)"
     fi
     echo "    downloading YAMIS icon set ..."
-    if git clone --depth 1 https://github.com/yeyushengfanw/yamis-icon-theme.git "$TMP/yamis" 2>/dev/null \
-        || git clone --depth 1 https://github.com/daniruixin/yamis-icon-theme.git "$TMP/yamis" 2>/dev/null; then
-        mkdir -p ~/.icons
-        cp -r "$TMP"/yamis/* ~/.icons/ 2>/dev/null
-        echo "    YAMIS icons installed to ~/.icons/"
+    if git clone --depth 1 https://bitbucket.org/dirn-typo/yet-another-monochrome-icon-set.git "$TMP/yamis" 2>/dev/null; then
+        mkdir -p ~/.icons/YAMIS
+        if cp -r "$TMP"/yamis/. ~/.icons/YAMIS/ 2>/dev/null; then
+            echo "    YAMIS icons installed to ~/.icons/YAMIS/"
+        else
+            echo "    YAMIS copy failed (skipped)"
+        fi
     else
         echo "    YAMIS download failed (offline? skipped)"
     fi
