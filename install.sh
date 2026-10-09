@@ -17,7 +17,7 @@ echo "=========================================="
 echo "==> [1/9] System packages ..."
 # check each package: installed+current = skip, installed+outdated = report,
 # missing = install
-PKGS="polybar picom rofi plank xdotool imagemagick pacman-contrib cachy-update alacritty conky cava playerctl curl noto-fonts noto-fonts-cjk ttf-nerd-fonts-symbols"
+PKGS="polybar picom rofi plank xdotool imagemagick pacman-contrib cachy-update alacritty conky cava playerctl curl noto-fonts noto-fonts-cjk ttf-nerd-fonts-symbols spotify-launcher"
 MISSING=""; OUTDATED=""
 for p in $PKGS; do
     if ! pacman -Qi "$p" >/dev/null 2>&1; then
@@ -96,6 +96,10 @@ xfconf-query -c xfwm4 -p /general/margin_top -n -t int -s 0 2>/dev/null || \
 # Super+Space opens the app launcher
 xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>space" -n -t string -s "rofi -show drun" 2>/dev/null || \
     xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>space" -t string -s "rofi -show drun"
+# Super+less opens the wallpaper switcher
+xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>less" -n -t string -s "$HOME/.config/rofi/wallpaper.sh" 2>/dev/null || \
+    xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>less" -t string -s "$HOME/.config/rofi/wallpaper.sh"
+
 echo "    done (re-login shows the pill bar instead of the stock panel)"
 echo "    NOTE: once, in Settings > Session and Startup > Sessions:"
 echo "    clear saved sessions (prevents double-starting watchers)."
