@@ -442,3 +442,39 @@ log shows 4 UPDATEs, then CREATE of the missing property, then
 XFDESKTOP RELOAD CALLED, then an honest "set:". Final store contains
 the single-wallpaper property with the random file. Fresh-machine
 and had-wallpaper paths unchanged.
+
+## Addendum: wallpaper bug — the real root cause (monitor name in the property path)
+
+### Symptom
+Across three fixes, a fresh VM never showed the random wallpaper
+even though the installer reported success and the setting could be
+found in xfconf.
+
+### Root cause
+The wallpaper property path contains the MONITOR NAME, which is
+hardware/driver-specific: /backdrop/screen0/monitor<NAME>/last-image.
+The installer hardcoded "monitor0". The fresh VM's monitor is named
+"Virtual-1" — so the setting was written to a monitor that does not
+exist, and xfdesktop (which only reads the real monitor's path)
+ignored it. The settings dialog on the same VM wrote to
+monitorVirtual-1, which revealed the mismatch. Additionally, setting
+an image also requires the image-show and image-style properties to
+exist — the GUI creates them implicitly on a first manual set; the
+installer did not.
+
+### Fix
+The installer now asks the system for the monitor name (xrandr
+--query, first connected output) and writes the full property set to
+the real path: last-image, plus image-show=true and image-style
+(zoom/fit) created when missing, plus updating any existing
+per-workspace variants. Success is verified by reading the value
+back — "set:" only prints when the stored value matches the chosen
+wallpaper. xfdesktop --reload afterwards applies it immediately.
+
+### Testing
+Sandbox with a faithful fake xfconf-query/xrandr (Virtual-1 as the
+connected output, faithful create/update/read semantics):
+fresh machine — creates image-show, image-style, last-image on the
+monitorVirtual-1 path, read-back matches, reload called;
+second run — updates the existing settings, read-back matches.
+bash -n clean; stale duplicate success-block removed in testing.

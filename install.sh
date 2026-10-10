@@ -187,43 +187,57 @@ if [ -d "$REPO/wallpapers" ] && ls "$REPO"/wallpapers/* >/dev/null 2>&1; then
                     SETCOUNT=$((SETCOUNT+1))
                 fi
             done < <(xfconf-query -c xfce4-desktop -l 2>/dev/null | grep 'last-image' || true)
-            # ALWAYS make sure the single-wallpaper property is set:
-            # with per-workspace wallpapers off (the fresh-install
-            # default) xfdesktop reads /backdrop/screen0/monitor0/
-            # last-image — no workspaceN part. A previous install may
-            # have created ONLY the workspaceN variants, so the update
-            # loop above would "succeed" while the property xfdesktop
-            # actually reads is still missing.
-            MONITOR_PROP="/backdrop/screen0/monitor0/last-image"
-            if ! xfconf-query -c xfce4-desktop -p "$MONITOR_PROP" >/dev/null 2>&1; then
-                echo "    creating the missing single-wallpaper setting ..."
-                if xfconf-query -c xfce4-desktop -p "$MONITOR_PROP" \
+            # The property path contains the MONITOR NAME, which is not
+            # fixed: it comes from the hardware/driver (monitor0,
+            # monitorVirtual-1, monitorDP-1, ...). Hardcoding any name
+            # writes to a monitor that may not exist — the setting lands
+            # in xfconf but xfdesktop never reads it. So ASK THE SYSTEM:
+            # xrandr names the connected outputs; xfce4-desktop uses
+            # "monitor<NAME>".
+            MONITOR=$(xrandr --query 2>/dev/null | awk '/ connected/ {print $1; exit}')
+            if [ -z "$MONITOR" ]; then
+                MONITOR="0"
+            fi
+            BASE="/backdrop/screen0/monitor$MONITOR"
+            echo "    monitor detected: $MONITOR"
+            # ensure the display-style props exist (xfdesktop will not
+            # paint an image without them; the GUI creates them on first
+            # manual set — the installer must create them itself)
+            if ! xfconf-query -c xfce4-desktop -p "$BASE/image-show" >/dev/null 2>&1; then
+                xfconf-query -c xfce4-desktop -p "$BASE/image-show" -n -t bool -s true 2>/dev/null || true
+            fi
+            if ! xfconf-query -c xfce4-desktop -p "$BASE/image-style" >/dev/null 2>&1; then
+                xfconf-query -c xfce4-desktop -p "$BASE/image-style" -n -t int -s 5 2>/dev/null || true
+            fi
+            # set the image on the REAL monitor path (create if missing)
+            if xfconf-query -c xfce4-desktop -p "$BASE/last-image" >/dev/null 2>&1; then
+                if xfconf-query -c xfce4-desktop -p "$BASE/last-image" -s "$RAND"; then
+                    SETCOUNT=$((SETCOUNT+1))
+                fi
+            else
+                if xfconf-query -c xfce4-desktop -p "$BASE/last-image" \
                     -n -t string -s "$RAND"; then
                     SETCOUNT=$((SETCOUNT+1))
                 fi
             fi
-            # fresh machine with none of the standard settings: create
-            # the per-workspace variants too (used when per-workspace
-            # wallpapers are ON; the other mode ignores them)
-            if [ "$SETCOUNT" -eq 0 ]; then
-                echo "    no wallpaper settings exist yet — creating them ..."
-                for ws in 0 1 2 3; do
-                    if xfconf-query -c xfce4-desktop \
-                        -p "/backdrop/screen0/monitor0/workspace$ws/last-image" \
-                        -n -t string -s "$RAND"; then
-                        SETCOUNT=$((SETCOUNT+1))
-                    fi
-                done
-            fi
-            # make the running desktop pick the setting up right away
-            if [ "$SETCOUNT" -gt 0 ]; then
+            # also update any existing per-workspace settings (used when
+            # per-workspace wallpapers are ON)
+            while read -r prop; do
+                [ -n "$prop" ] || continue
+                if xfconf-query -c xfce4-desktop -p "$prop" -s "$RAND"; then
+                    SETCOUNT=$((SETCOUNT+1))
+                fi
+            done < <(xfconf-query -c xfce4-desktop -l 2>/dev/null | grep 'last-image' || true)
+            # verify for real: read the value back — trust nothing
+            STORED=$(xfconf-query -c xfce4-desktop -p "$BASE/last-image" 2>/dev/null)
+            if [ "$STORED" = "$RAND" ]; then
                 xfdesktop --reload 2>/dev/null || true
                 echo "    set: $RAND"
                 echo "    (Super+< now works — the switcher needs a current wallpaper)"
             else
-                echo "    WARNING: could not set the wallpaper automatically."
-                echo "    After logging in, press Super+< and pick one — that"
-                echo "    saves the setting and the switcher works from then on."
+                echo "    WARNING: could not set the wallpaper automatically"
+                echo "    (read-back check failed). After logging in, press"
+                echo "    Super+< and pick one — the switcher works from then on."
             fi
         fi
     else
