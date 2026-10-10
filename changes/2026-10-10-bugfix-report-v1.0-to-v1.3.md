@@ -383,3 +383,32 @@ exist yet — creating them ...", 4 settings actually written,
 "set:" printed; machine with an existing wallpaper -> updated as
 before; failure path prints the WARNING instead of a false "set:".
 bash -n clean.
+
+## Addendum: wallpaper bug — second fix (wrong xfconf path on fresh machines)
+
+### Symptom
+The first fix (creating workspace0-3 wallpaper settings) still did
+not change the wallpaper on a fresh VM.
+
+### Root cause
+On a fresh install, "different wallpaper for each workspace" is OFF.
+In that mode xfdesktop reads /backdrop/screen0/monitor0/last-image —
+WITHOUT any workspaceN segment. The first fix only wrote the
+workspaceN variants, so the property xfdesktop actually reads was
+never created. The sandbox test could not catch this: it ran
+against a faithful-in-shape fake xfconf-query, not real xfdesktop,
+so it confirmed the code path but not the property name reality.
+
+### Fix
+The installer now creates BOTH variants when no settings exist:
+/backdrop/screen0/monitor0/last-image (single-wallpaper mode) and
+the four workspaceN variants (per-workspace mode). Each mode ignores
+the other's properties, so writing both is safe. After a successful
+write, xfdesktop --reload forces the running desktop to re-read the
+settings, so the wallpaper changes immediately, not just next login.
+
+### Testing
+Placement verified: the block runs only after the wallpapers are
+copied from the repo (inside step 8, directly after the cp). Syntax
+clean; both paths present; success counting unchanged (honest "set:"
+or WARNING). Final visual proof: fresh-VM run.

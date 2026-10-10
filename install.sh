@@ -187,11 +187,19 @@ if [ -d "$REPO/wallpapers" ] && ls "$REPO"/wallpapers/* >/dev/null 2>&1; then
                     SETCOUNT=$((SETCOUNT+1))
                 fi
             done < <(xfconf-query -c xfce4-desktop -l 2>/dev/null | grep 'last-image' || true)
-            # fresh machine: no wallpaper settings exist yet — create the
-            # standard ones (they are what xfdesktop and the Super+<
-            # switcher read)
+            # fresh machine: no wallpaper settings exist yet — create
+            # BOTH standard variants: with per-workspace wallpapers off
+            # (the fresh-install default) xfdesktop reads
+            # /backdrop/screen0/monitor0/last-image (no workspaceN part);
+            # with them on, it reads the workspaceN variants. Writing both
+            # covers either setting; each side ignores the other's props.
             if [ "$SETCOUNT" -eq 0 ]; then
                 echo "    no wallpaper settings exist yet — creating them ..."
+                if xfconf-query -c xfce4-desktop \
+                    -p "/backdrop/screen0/monitor0/last-image" \
+                    -n -t string -s "$RAND"; then
+                    SETCOUNT=$((SETCOUNT+1))
+                fi
                 for ws in 0 1 2 3; do
                     if xfconf-query -c xfce4-desktop \
                         -p "/backdrop/screen0/monitor0/workspace$ws/last-image" \
@@ -200,7 +208,9 @@ if [ -d "$REPO/wallpapers" ] && ls "$REPO"/wallpapers/* >/dev/null 2>&1; then
                     fi
                 done
             fi
+            # make the running desktop pick the setting up right away
             if [ "$SETCOUNT" -gt 0 ]; then
+                xfdesktop --reload 2>/dev/null || true
                 echo "    set: $RAND"
                 echo "    (Super+< now works — the switcher needs a current wallpaper)"
             else
