@@ -187,19 +187,26 @@ if [ -d "$REPO/wallpapers" ] && ls "$REPO"/wallpapers/* >/dev/null 2>&1; then
                     SETCOUNT=$((SETCOUNT+1))
                 fi
             done < <(xfconf-query -c xfce4-desktop -l 2>/dev/null | grep 'last-image' || true)
-            # fresh machine: no wallpaper settings exist yet — create
-            # BOTH standard variants: with per-workspace wallpapers off
-            # (the fresh-install default) xfdesktop reads
-            # /backdrop/screen0/monitor0/last-image (no workspaceN part);
-            # with them on, it reads the workspaceN variants. Writing both
-            # covers either setting; each side ignores the other's props.
-            if [ "$SETCOUNT" -eq 0 ]; then
-                echo "    no wallpaper settings exist yet — creating them ..."
-                if xfconf-query -c xfce4-desktop \
-                    -p "/backdrop/screen0/monitor0/last-image" \
+            # ALWAYS make sure the single-wallpaper property is set:
+            # with per-workspace wallpapers off (the fresh-install
+            # default) xfdesktop reads /backdrop/screen0/monitor0/
+            # last-image — no workspaceN part. A previous install may
+            # have created ONLY the workspaceN variants, so the update
+            # loop above would "succeed" while the property xfdesktop
+            # actually reads is still missing.
+            MONITOR_PROP="/backdrop/screen0/monitor0/last-image"
+            if ! xfconf-query -c xfce4-desktop -p "$MONITOR_PROP" >/dev/null 2>&1; then
+                echo "    creating the missing single-wallpaper setting ..."
+                if xfconf-query -c xfce4-desktop -p "$MONITOR_PROP" \
                     -n -t string -s "$RAND"; then
                     SETCOUNT=$((SETCOUNT+1))
                 fi
+            fi
+            # fresh machine with none of the standard settings: create
+            # the per-workspace variants too (used when per-workspace
+            # wallpapers are ON; the other mode ignores them)
+            if [ "$SETCOUNT" -eq 0 ]; then
+                echo "    no wallpaper settings exist yet — creating them ..."
                 for ws in 0 1 2 3; do
                     if xfconf-query -c xfce4-desktop \
                         -p "/backdrop/screen0/monitor0/workspace$ws/last-image" \

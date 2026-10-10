@@ -412,3 +412,33 @@ Placement verified: the block runs only after the wallpapers are
 copied from the repo (inside step 8, directly after the cp). Syntax
 clean; both paths present; success counting unchanged (honest "set:"
 or WARNING). Final visual proof: fresh-VM run.
+
+## Addendum: wallpaper bug — third fix (update loop masked the missing property)
+
+### Symptom
+Even after the second fix, a fresh VM did not change its wallpaper.
+The installer printed the copy question and "copied" but the random
+wallpaper never appeared.
+
+### Root cause
+Ordering. The "update existing settings" loop ran first; the previous
+install had already created the workspace0-3 last-image settings, so
+that loop succeeded and SETCOUNT was non-zero — the code that creates
+the single-wallpaper property (/backdrop/screen0/monitor0/last-image,
+the one xfdesktop actually reads with per-workspace wallpapers OFF)
+never ran. The success path short-circuited the fix.
+
+### Fix
+The single-wallpaper property is now ALWAYS ensured, regardless of
+what the update loop found: if it does not exist, it is created
+before anything else. The workspace0-3 variants are only created when
+no standard settings exist at all. xfdesktop --reload afterwards
+forces the running desktop to re-read.
+
+### Testing
+Full sandbox trace against the exact repo block, simulating the VM
+state (workspace0-3 settings pre-created, single property missing):
+log shows 4 UPDATEs, then CREATE of the missing property, then
+XFDESKTOP RELOAD CALLED, then an honest "set:". Final store contains
+the single-wallpaper property with the random file. Fresh-machine
+and had-wallpaper paths unchanged.
