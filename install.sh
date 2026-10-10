@@ -29,7 +29,7 @@ echo "    the bar (polybar), compositor (picom), menus (rofi), dock (plank),"
 echo "    terminal (alacritty), widget (conky), spectrum (cava), and helpers."
 # check each package: installed+current = skip, installed+outdated = report,
 # missing = install
-PKGS="polybar picom rofi plank xdotool imagemagick pacman-contrib cachy-update alacritty conky cava playerctl curl noto-fonts noto-fonts-cjk ttf-nerd-fonts-symbols"
+PKGS="polybar picom rofi plank xdotool xorg-xrandr imagemagick pacman-contrib cachy-update alacritty conky cava playerctl curl noto-fonts noto-fonts-cjk ttf-nerd-fonts-symbols"
 echo "    checking every package — watching me work:"
 MISSING=""; OUTDATED=""
 for p in $PKGS; do
@@ -195,6 +195,19 @@ if [ -d "$REPO/wallpapers" ] && ls "$REPO"/wallpapers/* >/dev/null 2>&1; then
             # xrandr names the connected outputs; xfce4-desktop uses
             # "monitor<NAME>".
             MONITOR=$(xrandr --query 2>/dev/null | awk '/ connected/ {print $1; exit}')
+            if [ -z "$MONITOR" ]; then
+                # xrandr unavailable (should not happen — it is in the
+                # package list): look for monitor names the desktop or
+                # the settings GUI already used in backdrop props.
+                # Real output names are never bare "0", so prefer a
+                # non-"0" name.
+                MONITOR=$(xfconf-query -c xfce4-desktop -l 2>/dev/null \
+                    | sed -n 's|^/backdrop/screen0/monitor\([^/]*\)/.*|\1|p' \
+                    | sort -u | grep -v '^0$' | head -1)
+                if [ -n "$MONITOR" ]; then
+                    echo "    (xrandr missing — monitor name from existing settings)"
+                fi
+            fi
             if [ -z "$MONITOR" ]; then
                 MONITOR="0"
             fi

@@ -478,3 +478,34 @@ fresh machine — creates image-show, image-style, last-image on the
 monitorVirtual-1 path, read-back matches, reload called;
 second run — updates the existing settings, read-back matches.
 bash -n clean; stale duplicate success-block removed in testing.
+
+## Addendum: wallpaper bug — xrandr was missing (detection depended on an uninstalled tool)
+
+### Symptom
+After the monitor-detection fix, a fresh VM still printed
+"monitor detected: 0" and no wallpaper appeared.
+
+### Root cause
+The detection runs `xrandr --query`, but xorg-xrandr was never in
+the installer's package list. On the fresh VM xrandr was simply not
+installed ("command not found"), the detection got an empty result,
+fell back to the generic "monitor0" — a monitor that does not exist
+on that machine — and the settings were again written to a path
+xfdesktop never reads.
+
+### Fix
+1. xorg-xrandr added to the package list, so the tool the fix
+   depends on is guaranteed to be installed before step 8.
+2. Safety net: if xrandr is still unavailable, the monitor name is
+   taken from the backdrop properties already present in the
+   settings store (the names the desktop/GUI itself used; real
+   output names are never bare "0", so a non-"0" name is preferred
+   over the generic fallback).
+
+### Testing
+Sandbox, xrandr absent, store pre-populated with monitorVirtual-1
+props: the fallback prints "(xrandr missing — monitor name from
+existing settings)" and detects "Virtual-1"; image-show/image-style
+are created, last-image written to the real path, read-back
+matches, reload called. Direct xrandr path unchanged (Virtual-1 via
+xrandr). bash -n clean.
