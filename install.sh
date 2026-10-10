@@ -233,10 +233,34 @@ if [ -d "$REPO/wallpapers" ] && ls "$REPO"/wallpapers/* >/dev/null 2>&1; then
                     SETCOUNT=$((SETCOUNT+1))
                 fi
             fi
-            # also update any existing per-workspace settings (used when
-            # per-workspace wallpapers are ON)
+            # XFCE 4.20's xfdesktop reads the PER-WORKSPACE path on the
+            # real monitor (monitor<NAME>/workspace0/last-image) — the
+            # base path alone is not painted. Create the workspace paths
+            # for workspaces 0-3 (create if missing, update if present).
+            for ws in 0 1 2 3; do
+                WSLAST="$BASE/workspace$ws/last-image"
+                if xfconf-query -c xfce4-desktop -p "$WSLAST" >/dev/null 2>&1; then
+                    if xfconf-query -c xfce4-desktop -p "$WSLAST" -s "$RAND"; then
+                        SETCOUNT=$((SETCOUNT+1))
+                    fi
+                else
+                    if xfconf-query -c xfce4-desktop -p "$WSLAST" \
+                        -n -t string -s "$RAND"; then
+                        SETCOUNT=$((SETCOUNT+1))
+                    fi
+                fi
+                if ! xfconf-query -c xfce4-desktop -p "$BASE/workspace$ws/image-style" >/dev/null 2>&1; then
+                    xfconf-query -c xfce4-desktop -p "$BASE/workspace$ws/image-style" \
+                        -n -t int -s 5 2>/dev/null || true
+                fi
+            done
+            # update any other existing last-image settings (e.g. other
+            # monitors left over from earlier setups)
             while read -r prop; do
                 [ -n "$prop" ] || continue
+                case "$prop" in
+                    "$BASE"/*) continue ;; # already handled above
+                esac
                 if xfconf-query -c xfce4-desktop -p "$prop" -s "$RAND"; then
                     SETCOUNT=$((SETCOUNT+1))
                 fi

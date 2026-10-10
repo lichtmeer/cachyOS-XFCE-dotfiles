@@ -509,3 +509,38 @@ existing settings)" and detects "Virtual-1"; image-show/image-style
 are created, last-image written to the real path, read-back
 matches, reload called. Direct xrandr path unchanged (Virtual-1 via
 xrandr). bash -n clean.
+
+## Addendum: wallpaper bug — the actual 4.20 behavior (per-workspace path on the real monitor)
+
+### Symptom
+After the xrandr fix, the correct monitor was detected and the
+settings were verifiably stored — yet the desktop still showed the
+default wallpaper after a re-login.
+
+### Root cause (from a live-VM diagnosis)
+xfdesktop 4.20.2 paints the wallpaper from the PER-WORKSPACE path
+on the real monitor:
+/backdrop/screen0/monitorVirtual-1/workspace0/last-image
+The installer wrote only the base path (.../monitorVirtual-1/
+last-image). The settings dialog on the same machine wrote the
+workspace path — and its wallpaper appeared instantly, proving
+which path is authoritative. Setting a wallpaper via the GUI right
+after the installer showed both: installer value on the base path,
+GUI value on the workspace path, only the workspace one painted.
+
+### Fix
+After detecting the monitor (xrandr, with the settings-store
+fallback), the installer now creates or updates the workspace0-3
+paths on that monitor: last-image (the painted value) and
+image-style (created when missing). The base path is still written
+for older xfdesktop versions, other existing last-image settings
+are updated, and the read-back check now verifies the workspace
+path — the one 4.20 actually paints.
+
+### Testing
+Sandbox, faithful fakes (Virtual-1 via xrandr, create/update/read
+semantics): fresh machine creates base + 4 workspace paths, the
+painted path holds the random wallpaper; re-run updates them;
+read-back matches; bash -n clean. The GUI-diff method (comparing
+xfconf state before/after a manual wallpaper set) located the
+authoritative path — that goes into the toolbox.
