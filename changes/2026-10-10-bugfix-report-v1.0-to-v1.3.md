@@ -351,3 +351,35 @@ Docs-only change: install.sh untouched.
 Consistency checks: Spotify gate in both files, Super+T in both,
 margins 55 present, "remains manual" = 1 item, zero stale claims
 (manual theme clicks, Adwaita greeter value, old quotes all gone).
+
+## Addendum: random wallpaper never applied on a fresh machine
+
+### Symptom
+On a clean CachyOS install the installer printed "set: <wallpaper>"
+but the desktop wallpaper never changed. On the test VM the same
+step worked every time.
+
+### Root cause
+The block only UPDATED existing per-workspace wallpaper settings
+(xfconf last-image properties). A fresh machine has none of those
+properties yet — the grep found nothing, the update loop never ran,
+and the script still printed "set:". xfconf-query needs -n -t string
+to CREATE a property; without it, writing to a non-existent property
+just fails (silently, thanks to 2>/dev/null). The VM worked only
+because a wallpaper had been set there before.
+
+### Fix
+After trying the existing properties, if none were updated the
+installer now CREATES the standard settings for workspaces 0-3
+(/backdrop/screen0/monitor0/workspaceN/last-image, -n -t string).
+Success is counted for real: "set:" only prints when at least one
+write succeeded; otherwise an honest WARNING with the one-click
+fallback (press Super+< and pick one) is printed instead.
+
+### Testing
+Sandbox with a faithful fake xfconf-query (missing property without
+-n fails, like the real one): fresh machine -> "no wallpaper settings
+exist yet — creating them ...", 4 settings actually written,
+"set:" printed; machine with an existing wallpaper -> updated as
+before; failure path prints the WARNING instead of a false "set:".
+bash -n clean.

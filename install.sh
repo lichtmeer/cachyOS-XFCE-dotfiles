@@ -178,11 +178,36 @@ if [ -d "$REPO/wallpapers" ] && ls "$REPO"/wallpapers/* >/dev/null 2>&1; then
             \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' \) | shuf -n1)
         if [ -n "$RAND" ]; then
             echo "    setting a random wallpaper as the starting point ..."
-            xfconf-query -c xfce4-desktop -l 2>/dev/null | grep 'last-image' | while read -r prop; do
-                xfconf-query -c xfce4-desktop -p "$prop" -s "$RAND" 2>/dev/null
-            done
-            echo "    set: $RAND"
-            echo "    (Super+< now works — the switcher needs a current wallpaper)"
+            SETCOUNT=0
+            # machines that already had a wallpaper: update the existing
+            # per-workspace settings
+            while read -r prop; do
+                [ -n "$prop" ] || continue
+                if xfconf-query -c xfce4-desktop -p "$prop" -s "$RAND"; then
+                    SETCOUNT=$((SETCOUNT+1))
+                fi
+            done < <(xfconf-query -c xfce4-desktop -l 2>/dev/null | grep 'last-image' || true)
+            # fresh machine: no wallpaper settings exist yet — create the
+            # standard ones (they are what xfdesktop and the Super+<
+            # switcher read)
+            if [ "$SETCOUNT" -eq 0 ]; then
+                echo "    no wallpaper settings exist yet — creating them ..."
+                for ws in 0 1 2 3; do
+                    if xfconf-query -c xfce4-desktop \
+                        -p "/backdrop/screen0/monitor0/workspace$ws/last-image" \
+                        -n -t string -s "$RAND"; then
+                        SETCOUNT=$((SETCOUNT+1))
+                    fi
+                done
+            fi
+            if [ "$SETCOUNT" -gt 0 ]; then
+                echo "    set: $RAND"
+                echo "    (Super+< now works — the switcher needs a current wallpaper)"
+            else
+                echo "    WARNING: could not set the wallpaper automatically."
+                echo "    After logging in, press Super+< and pick one — that"
+                echo "    saves the setting and the switcher works from then on."
+            fi
         fi
     else
         echo "    skipped"
