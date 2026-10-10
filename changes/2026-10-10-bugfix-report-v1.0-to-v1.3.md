@@ -544,3 +544,22 @@ painted path holds the random wallpaper; re-run updates them;
 read-back matches; bash -n clean. The GUI-diff method (comparing
 xfconf state before/after a manual wallpaper set) located the
 authoritative path — that goes into the toolbox.
+
+## Addendum: complete dependency documentation
+
+### Symptom
+The README listed the step-1 packages but was missing xorg-xrandr
+(added when the wallpaper fix started detecting the monitor name),
+and gave no reasons for any package.
+
+### Fix
+The README's Dependencies section is now a table of all 16 packages
+with a one-line purpose each, followed by the permission-gated
+spotify-launcher (with its every-run question and --needed note)
+and the download-time-only git dependency. INSTALL.md's step 1
+references the table instead of duplicating it. Docs are now a 1:1
+match with what the installer installs.
+
+### Testing
+Script-checked: every PKGS entry from install.sh is present in the
+README table; INSTALL pointer present; no stale claims.

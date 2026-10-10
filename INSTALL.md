@@ -20,7 +20,8 @@ explained in the output right before the password prompt.
 1. **System packages** — checks every package, one line per package
    (ok / MISSING / outdated). Installs only missing ones with
    `pacman -S --needed` (its normal output shows); reports outdated
-   ones without touching them.
+   ones without touching them. The full list and each package's
+   purpose: see Dependencies in [README.md](README.md).
 2. **Spotify question** — asked on every run, even when installed
    (the glance widget's music section needs a Spotify player via
    playerctl; without it that section stays empty). Yes is always

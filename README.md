@@ -98,11 +98,37 @@ rollback: see [INSTALL.md](INSTALL.md).
 
 ## Dependencies
 
-Installed automatically by `install.sh`: polybar, picom, rofi, plank,
-xdotool, imagemagick, pacman-contrib, cachy-update, alacritty, conky,
-cava, playerctl, curl, noto-fonts, noto-fonts-cjk,
-ttf-nerd-fonts-symbols. spotify-launcher is asked about separately
-(official repos only — no AUR anywhere).
+Installed automatically by `install.sh` (step 1, official repos only —
+no AUR anywhere):
+
+| Package | Why |
+|---|---|
+| `polybar` | the pill bar (and the invisible reserve bar) |
+| `picom` | compositor: rounded corners, no shadows on the widget |
+| `rofi` | launcher, power menu, wallpaper picker, Alt+Tab switcher |
+| `plank` | the dock |
+| `xdotool` | Alt+Tab key-state polling, fullscreen watcher |
+| `xorg-xrandr` | monitor detection for the wallpaper step (the property path contains the monitor name) |
+| `imagemagick` | wallpaper thumbnails and the switcher crossfade |
+| `pacman-contrib` | update checker (`checkupdates`) |
+| `cachy-update` | CachyOS update tool the bar's updater launches |
+| `alacritty` | terminal (Super+T) |
+| `conky` | the glance widget |
+| `cava` | the music spectrum |
+| `playerctl` | track info + playback buttons (talks to Spotify) |
+| `curl` | weather fetch (wttr.in) |
+| `noto-fonts`, `noto-fonts-cjk` | text rendering, full unicode coverage |
+| `ttf-nerd-fonts-symbols` | icons in the bar |
+
+Asked about separately (permission gate, asked on EVERY run — answering
+yes is always safe, `--needed` never reinstalls):
+
+- `spotify-launcher` — the glance widget's music section talks to a
+  Spotify player via playerctl; without it that section stays empty.
+
+Needed at download time only (already on any Arch/CachyOS base
+install): `git` — step 9 fetches YAMIS + Orchis-Dark from their
+repositories (only when you answer yes).
 
 The glance widget deliberately uses no icon-font glyphs — its music
 buttons are drawn as geometric shapes, so nothing can render as a
