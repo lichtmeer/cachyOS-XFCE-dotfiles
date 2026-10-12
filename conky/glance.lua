@@ -31,7 +31,7 @@ local buttons = {}
 -- ---------- cava -----------------------------------------------------------
 
 local CAVA_FILE = os.getenv('HOME') .. '/.cache/conky-glance/cava.raw'
-local CAVA_BARS = 24
+local CAVA_BARS = 36
 
 local function cava_read()
     local f = io.open(CAVA_FILE, 'r')
@@ -228,16 +228,15 @@ end
 
 -- ---------- layout constants -----------------------------------------------
 
-local CLOCK_Y    = 108
-local DIV1_Y     = 172
-local WX_Y       = 204
-local DIV2_Y     = 230
-local SP_TITLE_Y = 270
-local SP_ART_Y   = 298
-local CAVA_Y     = 318
-local CAVA_H     = 28
-local PROG_Y     = 356
-local BTN_Y      = 418
+local DIV1_Y = 68
+local WX_Y = 40
+local DIV2_Y = 92
+local SP_TITLE_Y = 124
+local SP_ART_Y = 152
+local CAVA_Y = 176
+local CAVA_H = 150
+local PROG_Y = 348
+local BTN_Y = 408
 local BTN_R      = 20
 local BTN_SEP    = 76
 
@@ -256,17 +255,6 @@ function conky_main()
     if cr == nil then cairo_surface_destroy(cs) return end
 
     buttons = {}
-
-    local months = { 'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December' }
-    local days = { 'Sunday', 'Monday', 'Tuesday', 'Wednesday',
-        'Thursday', 'Friday', 'Saturday' }
-    local date_s = days[os.date('*t').wday] .. ', '
-        .. months[os.date('*t').month] .. ' ' .. os.date('%d')
-
-    -- date headline, light weight, centered
-    draw_text(cr, date_s, W/2, CLOCK_Y, 'Noto Sans', 28, C.text,
-        WEIGHT_NORMAL, 'center')
 
     -- divider 1: soft gradient, fades at the edges
     cairo_set_line_width(cr, 1)
