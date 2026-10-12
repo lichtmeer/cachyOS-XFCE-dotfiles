@@ -80,6 +80,8 @@ local function soft_divider(cr, x1, x2, y)
     cairo_pattern_destroy(pat)
 end
 
+-- smoothed (gravity) values so bars glide down instead of snapping
+local cava_smooth = {}
 local function cava_draw(cr, x, y, w, h)
     local vals = cava_read()
     if not vals then return end
@@ -88,7 +90,13 @@ local function cava_draw(cr, x, y, w, h)
     local gap = 2
     local bw = (w - gap * (n - 1)) / n
     for i = 1, n do
-        local v = math.max(0, math.min(100, vals[i] or 0))
+        local raw = math.max(0, math.min(100, vals[i] or 0))
+        -- soft cap: gently compress the top so peaks rarely peg at max
+        raw = 100 * (raw / 100) ^ 1.35
+        -- gravity: bars can rise instantly but fall slowly
+        local prev = cava_smooth[i] or 0
+        local v = (raw > prev) and raw or (prev * 0.94)
+        cava_smooth[i] = v
         local bh = math.max(2, (v / 100) * h)
         local bx = x + (i - 1) * (bw + gap)
         rounded(cr, bx, y + h - bh, bw, bh, 1.5)
