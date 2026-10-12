@@ -1,5 +1,5 @@
 #!/bin/bash
-# install.sh: apply the conky-glance widget (with cava spectrum) to this system.
+# install.sh: apply the conky-glance widget (with pyspectrum) to this system.
 # Run from the repo:  bash conky/install.sh   (safe to re-run)
 
 set -e
@@ -14,7 +14,7 @@ if [ "$(id -u)" = "0" ]; then
 fi
 
 echo "==> Checking packages..."
-command -v cava  >/dev/null 2>&1 || { echo "    cava missing:  sudo pacman -S cava";  exit 1; }
+command -v parecord >/dev/null 2>&1 || { echo "    parecord missing: sudo pacman -S pulseaudio-utils"; exit 1; }
 command -v conky >/dev/null 2>&1 || { echo "    conky missing: sudo pacman -S conky"; exit 1; }
 
 echo "==> Backing up existing conky config..."
@@ -26,7 +26,7 @@ cp "$SRC/conky.conf"         "$CFG/"
 cp "$SRC/glance.lua"         "$CFG/"
 cp "$SRC/weather.sh"         "$CFG/"
 cp "$SRC/spotify-status.sh"  "$CFG/"
-cp "$SRC/cava.conf"          "$CFG/"
+cp "$SRC/pyspectrum.py"       "$CFG/"
 cp "$SRC/cava-spectrum.sh"   "$CFG/"
 chmod +x "$CFG/weather.sh" "$CFG/spotify-status.sh" "$CFG/cava-spectrum.sh"
 
@@ -43,16 +43,6 @@ else
     fi
 fi
 
-echo "==> Pinning cava to your default audio output ..."
-SINK=$(pactl info 2>/dev/null | grep 'Default Sink' | awk '{print $3}')
-if [ -n "$SINK" ]; then
-    sed -i "s|^source *=.*|source = ${SINK}.monitor|" "$CFG/cava.conf"
-    echo "    source = ${SINK}.monitor"
-else
-    echo "    no running audio server found — cava left at its default"
-    echo "    (it will be pinned to your output next time the installer runs)"
-fi
-
 echo "==> Installing autostart entry ..."
 mkdir -p "$HOME/.config/autostart"
 cp "$SRC/../autostart/Conky glance.desktop" "$HOME/.config/autostart/"
@@ -61,7 +51,7 @@ rm -f "$HOME/.config/autostart/conky.desktop" 2>/dev/null || true
 echo "==> Starting the widget ..."
 mkdir -p "$HOME/.cache/conky-glance"
 killall -q conky 2>/dev/null || true
-pkill -f "cava.*$CFG/cava.conf" 2>/dev/null || true
+pkill -f "cava-spectrum.sh" 2>/dev/null || true
 sleep 0.5
 nohup bash "$CFG/cava-spectrum.sh" >/dev/null 2>&1 &
 nohup conky -c "$CFG/conky.conf" >/dev/null 2>&1 &

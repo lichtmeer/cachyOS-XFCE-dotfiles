@@ -26,10 +26,10 @@ echo "=========================================="
 echo "==> [1/9] System packages ..."
 echo "    This step makes sure every tool the desktop needs is installed:"
 echo "    the bar (polybar), compositor (picom), menus (rofi), dock (plank),"
-echo "    terminal (alacritty), widget (conky), spectrum (cava), and helpers."
+echo "    terminal (alacritty), widget (conky), spectrum (pyspectrum), and helpers."
 # check each package: installed+current = skip, installed+outdated = report,
 # missing = install
-PKGS="polybar picom rofi plank xdotool xorg-xrandr imagemagick pacman-contrib cachy-update alacritty conky cava playerctl curl noto-fonts noto-fonts-cjk ttf-nerd-fonts-symbols"
+PKGS="polybar picom rofi plank xdotool xorg-xrandr imagemagick pacman-contrib cachy-update alacritty conky playerctl pulseaudio-utils curl noto-fonts noto-fonts-cjk ttf-nerd-fonts-symbols"
 echo "    checking every package — watching me work:"
 MISSING=""; OUTDATED=""
 for p in $PKGS; do
@@ -349,7 +349,7 @@ echo "==> Verifying ..."
 FAIL=0
 for f in ~/.config/polybar/config.ini ~/.config/polybar/hide-when-overlapped.sh \
          ~/.config/rofi/alt-tab.sh ~/.config/picom/picom.conf \
-         ~/.config/conky/glance.lua ~/.config/conky/cava.conf \
+         ~/.config/conky/glance.lua ~/.config/conky/pyspectrum.py \
          ~/.local/share/plank/themes/MaterialPill/dock.theme \
          ~/.config/autostart/"Conky glance.desktop"; do
     [ -e "$f" ] && echo "    ok   $f" || { echo "    MISS $f"; FAIL=1; }
