@@ -17,6 +17,27 @@ echo "==> Checking packages..."
 command -v parecord >/dev/null 2>&1 || { echo "    parecord missing: sudo pacman -S pulseaudio-utils"; exit 1; }
 command -v conky >/dev/null 2>&1 || { echo "    conky missing: sudo pacman -S conky"; exit 1; }
 
+echo "==> Checking conky version (1.25.x has a mouse regression) ..."
+if command -v conky >/dev/null 2>&1; then
+    VER=$(conky --version 2>/dev/null | grep -oPm1 "(?<=conky )\d+\.\d+(\.\d+)?")
+    case "$VER" in
+        1.25*)
+            echo "    WARNING: conky $VER has a mouse-event regression:"
+            echo "             the widget's transport buttons will NOT work."
+            echo "             Fix: install 1.24.2 and pin it:"
+            echo "               sudo pacman -U /var/cache/pacman/pkg/conky-1.24.2-*.pkg.tar.zst"
+            echo "               then add 'IgnorePkg = conky' to /etc/pacman.conf"
+            echo "             (see changes/2026-10-13-conky-1.25-mouse-regression.md)"
+            ;;
+        "")
+            echo "    (could not read conky version - continuing)"
+            ;;
+        *)
+            echo "    ok: conky $VER"
+            ;;
+    esac
+fi
+
 echo "==> Backing up existing conky config..."
 [ -d "$CFG" ] && cp -r "$CFG" "$CFG.bak-$(date +%Y%m%d-%H%M%S)"
 
