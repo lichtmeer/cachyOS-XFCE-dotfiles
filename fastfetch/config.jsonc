@@ -1,0 +1,38 @@
+{
+    "logo": {
+        "type": "file",
+        "source": "~/.config/fastfetch/logo.txt",
+        "padding": { "top": 0, "left": 0, "right": 3 }
+    },
+    "display": {
+        "separator": " ",
+        "color": {
+            "keys": "#A4C3FF",
+            "title": "#A4C3FF",
+            "output": "#E6E1E5"
+        }
+    },
+    "modules": [
+        "break",
+        { "type": "custom", "format": "\u001b[38;2;164;195;255m--------------------------------------------" },
+        { "type": "os", "key": "OS", "keyColor": "#A4C3FF" },
+        { "type": "kernel", "key": "Kernel", "keyColor": "#A4C3FF" },
+        { "type": "de", "key": "DE", "keyColor": "#A4C3FF" },
+        { "type": "wm", "key": "WM", "keyColor": "#A4C3FF" },
+        { "type": "wmtheme", "key": "WM Theme", "keyColor": "#A4C3FF" },
+        { "type": "theme", "key": "Theme", "keyColor": "#A4C3FF" },
+        { "type": "icons", "key": "Icons", "keyColor": "#A4C3FF" },
+        { "type": "font", "key": "Font", "keyColor": "#A4C3FF" },
+        { "type": "cursor", "key": "Cursor", "keyColor": "#A4C3FF" },
+        { "type": "terminal", "key": "Terminal", "keyColor": "#A4C3FF" },
+        { "type": "terminalfont", "key": "Terminal Font", "keyColor": "#A4C3FF" },
+        { "type": "uptime", "key": "Uptime", "keyColor": "#A4C3FF" },
+        { "type": "packages", "key": "Packages", "keyColor": "#A4C3FF" },
+        { "type": "shell", "key": "Shell", "keyColor": "#A4C3FF" },
+        { "type": "cpu", "key": "CPU", "keyColor": "#A4C3FF" },
+        { "type": "gpu", "key": "GPU", "keyColor": "#A4C3FF" },
+        { "type": "memory", "key": "Memory", "keyColor": "#A4C3FF" },
+        { "type": "disk", "key": "Disk", "keyColor": "#A4C3FF" },
+        "break"
+    ]
+}
