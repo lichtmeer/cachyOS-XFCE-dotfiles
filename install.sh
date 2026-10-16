@@ -114,12 +114,12 @@ echo "==> [6/11] Conky glance widget ..."
 bash conky/install.sh
 echo "    done (may have asked for your weather location)"
 
-echo "==> [6/11] Plank ..."
+echo "==> [7/11] Plank ..."
 mkdir -p ~/.local/share/plank/themes/MaterialPill
 cp plank/dock.theme ~/.local/share/plank/themes/MaterialPill/
 echo "    done (pick 'MaterialPill' in plank's preferences once)"
 
-echo "==> [7/11] Autostart + keybindings ..."
+echo "==> [8/11] Autostart + keybindings ..."
 mkdir -p ~/.config/autostart
 for f in autostart/*.desktop; do
     cp "$f" ~/.config/autostart/"$(basename "$f")"
@@ -176,7 +176,7 @@ echo "    done (re-login shows the pill bar instead of the stock panel)"
 echo "    NOTE: once, in Settings > Session and Startup > Sessions:"
 echo "    clear saved sessions (prevents double-starting watchers)."
 
-echo "==> [8/11] Wallpapers ..."
+echo "==> [9/11] Wallpapers ..."
 if [ -d "$REPO/wallpapers" ] && ls "$REPO"/wallpapers/* >/dev/null 2>&1; then
     read -r -p "    Copy the repo's wallpapers to ~/Pictures/wallpapers? [Y/n] " ANS
     if [ "${ANS:-y}" != "n" ] && [ "${ANS:-Y}" != "n" ]; then
@@ -292,7 +292,7 @@ if [ -d "$REPO/wallpapers" ] && ls "$REPO"/wallpapers/* >/dev/null 2>&1; then
     fi
 fi
 
-echo "==> [9/11] Icon pack + GTK theme (optional, from GitHub) ..."
+echo "==> [10/11] Icon pack + GTK theme (optional, from GitHub) ..."
 read -r -p "    Install YAMIS icons + Orchis-Dark theme? (needs internet; ~1 min) [y/N] " THEME
 if [ "$THEME" = "y" ] || [ "$THEME" = "Y" ]; then
     TMP=$(mktemp -d)
@@ -355,7 +355,7 @@ else
     echo "    skipped (see INSTALL.md section 3 for the manual route)"
 fi
 
-echo "==> [10/10] Brightness control (backlight write permission) ..."
+echo "==> [11/11] Brightness control (backlight write permission) ..."
 echo "    Lets the bar's brightness widget change your screen backlight."
 echo "    One-time per machine; needs your SUDO PASSWORD, then a re-login."
 if id -nG "$USER" | tr ' ' '\n' | grep -qx video; then
