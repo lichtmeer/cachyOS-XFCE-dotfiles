@@ -23,13 +23,13 @@ echo " CachyOS + XFCE desktop — one-command setup"
 echo " user: $(whoami)   host: $(uname -n)"
 echo "=========================================="
 
-echo "==> [1/10] System packages ..."
+echo "==> [1/11] System packages ..."
 echo "    This step makes sure every tool the desktop needs is installed:"
 echo "    the bar (polybar), compositor (picom), menus (rofi), dock (plank),"
 echo "    terminal (alacritty), widget (conky), spectrum (pyspectrum), and helpers."
 # check each package: installed+current = skip, installed+outdated = report,
 # missing = install
-PKGS="polybar picom rofi plank xdotool xorg-xrandr imagemagick pacman-contrib cachy-update alacritty conky playerctl pulseaudio-utils curl noto-fonts noto-fonts-cjk ttf-nerd-fonts-symbols"
+PKGS="polybar picom rofi plank xdotool xorg-xrandr imagemagick pacman-contrib cachy-update alacritty fastfetch conky playerctl pulseaudio-utils curl noto-fonts noto-fonts-cjk ttf-nerd-fonts-symbols"
 echo "    checking every package — watching me work:"
 MISSING=""; OUTDATED=""
 for p in $PKGS; do
@@ -83,33 +83,43 @@ else
     echo "    skipped — install later with: sudo pacman -S spotify-launcher"
 fi
 
-echo "==> [2/10] Polybar ..."
+echo "==> [2/11] Polybar ..."
 mkdir -p ~/.config/polybar
 cp polybar/* ~/.config/polybar/
 chmod +x ~/.config/polybar/*.sh
 echo "    done (bar, watcher v3, update checker)"
 
-echo "==> [3/10] Rofi ..."
+echo "==> [3/11] Rofi ..."
 mkdir -p ~/.config/rofi
 cp rofi/* ~/.config/rofi/
 chmod +x ~/.config/rofi/*.sh
 echo "    done (launcher, power menu, wallpaper picker, alt-tab)"
 
-echo "==> [4/10] Picom ..."
+echo "==> [4/11] Picom ..."
 mkdir -p ~/.config/picom
 cp picom/picom.conf ~/.config/picom/
 echo "    done (shadow exclusion for the widget included)"
 
-echo "==> [5/10] Conky glance widget ..."
+echo "==> [5/11] Alacritty + Fastfetch ..."
+mkdir -p ~/.config/alacritty ~/.config/fastfetch
+cp alacritty/alacritty.toml ~/.config/alacritty/ 2>/dev/null \
+    && echo "    alacritty: opens maximized" \
+    || echo "    alacritty config not in repo yet - skipped"
+cp fastfetch/config.jsonc ~/.config/fastfetch/ 2>/dev/null \
+    && echo "    fastfetch: config copied" \
+    || echo "    fastfetch config not in repo yet - skipped"
+cp fastfetch/logo.txt ~/.config/fastfetch/ 2>/dev/null || true
+echo "    done (terminal opens maximized; fastfetch shows the blue mouse)"
+echo "==> [6/11] Conky glance widget ..."
 bash conky/install.sh
 echo "    done (may have asked for your weather location)"
 
-echo "==> [6/10] Plank ..."
+echo "==> [6/11] Plank ..."
 mkdir -p ~/.local/share/plank/themes/MaterialPill
 cp plank/dock.theme ~/.local/share/plank/themes/MaterialPill/
 echo "    done (pick 'MaterialPill' in plank's preferences once)"
 
-echo "==> [7/10] Autostart + keybindings ..."
+echo "==> [7/11] Autostart + keybindings ..."
 mkdir -p ~/.config/autostart
 for f in autostart/*.desktop; do
     cp "$f" ~/.config/autostart/"$(basename "$f")"
@@ -166,7 +176,7 @@ echo "    done (re-login shows the pill bar instead of the stock panel)"
 echo "    NOTE: once, in Settings > Session and Startup > Sessions:"
 echo "    clear saved sessions (prevents double-starting watchers)."
 
-echo "==> [8/10] Wallpapers ..."
+echo "==> [8/11] Wallpapers ..."
 if [ -d "$REPO/wallpapers" ] && ls "$REPO"/wallpapers/* >/dev/null 2>&1; then
     read -r -p "    Copy the repo's wallpapers to ~/Pictures/wallpapers? [Y/n] " ANS
     if [ "${ANS:-y}" != "n" ] && [ "${ANS:-Y}" != "n" ]; then
@@ -282,7 +292,7 @@ if [ -d "$REPO/wallpapers" ] && ls "$REPO"/wallpapers/* >/dev/null 2>&1; then
     fi
 fi
 
-echo "==> [9/10] Icon pack + GTK theme (optional, from GitHub) ..."
+echo "==> [9/11] Icon pack + GTK theme (optional, from GitHub) ..."
 read -r -p "    Install YAMIS icons + Orchis-Dark theme? (needs internet; ~1 min) [y/N] " THEME
 if [ "$THEME" = "y" ] || [ "$THEME" = "Y" ]; then
     TMP=$(mktemp -d)
@@ -374,7 +384,9 @@ for f in ~/.config/polybar/config.ini ~/.config/polybar/hide-when-overlapped.sh 
          ~/.config/rofi/alt-tab.sh ~/.config/picom/picom.conf \
          ~/.config/conky/glance.lua ~/.config/conky/pyspectrum.py \
          ~/.local/share/plank/themes/MaterialPill/dock.theme \
-         ~/.config/autostart/"Conky glance.desktop"; do
+         ~/.config/autostart/"Conky glance.desktop" \
+         ~/.config/alacritty/alacritty.toml \
+         ~/.config/fastfetch/config.jsonc ~/.config/fastfetch/logo.txt; do
     [ -e "$f" ] && echo "    ok   $f" || { echo "    MISS $f"; FAIL=1; }
 done
 [ "$FAIL" = 1 ] && { echo "Some files missing — see the MISS lines."; exit 1; }
