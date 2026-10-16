@@ -137,7 +137,7 @@ no AUR anywhere):
 | `mpv` | plays the 60fps wallpaper crossfade video on the desktop layer |
 | `xorg-xinput` | Alt+Tab: raw Alt-release detection (keycode 64) |
 | `xorg-xrandr` | monitor detection for the wallpaper step (the property path contains the monitor name) |
-| `imagemagick` | wallpaper thumbnails and the switcher crossfade |
+| `imagemagick` | wallpaper thumbnails for the picker |
 | `pacman-contrib` | update checker (`checkupdates`) |
 | `cachy-update` | CachyOS update tool the bar's updater launches |
 | `alacritty` | terminal (Super+T), opens maximized |
