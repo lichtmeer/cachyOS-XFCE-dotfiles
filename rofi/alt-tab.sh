@@ -1,36 +1,31 @@
 #!/bin/bash
-# alt-tab.sh — hold-and-release window switcher.
-# Opens the rofi window switcher; a watcher commits the highlighted
-# entry when the user releases the Alt key (like Windows Alt+Tab).
+# alt-tab.sh — hold-and-release window switcher (v3, keycode-based).
+# xinput test reports raw keycodes, not names: Alt_L = keycode 64.
+# Commit happens on keycode 64's release.
 
-# start rofi windowed, remember its pid
-# pass the CURRENT Xfce icon theme to rofi (it cannot detect it alone)
 THEME=$(xfconf-query -c xsettings -p /Net/IconThemeName 2>/dev/null)
 ICON_ARGS=()
 if [ -n "$THEME" ]; then
     ICON_ARGS=(-icon-theme "$THEME")
 fi
+
 rofi -show window -theme "$HOME/.config/rofi/window.rasi" "${ICON_ARGS[@]}" &
 ROFI_PID=$!
 
-# wait until rofi is actually up
-for i in $(seq 1 40); do
-    kill -0 "$ROFI_PID" 2>/dev/null || exit 0
-    xdotool search --name "Switch" 2>/dev/null | grep -q . && break
-    sleep 0.01
-done
+KID=$(xinput list 2>/dev/null | sed -n 's/.*AT Translated Set 2 keyboard.*id=\([0-9]*\).*/\1/p' | head -1)
+[ -z "$KID" ] && KID=$(xinput list 2>/dev/null | sed -n '/keyboard/!d; /Virtual/d; s/.*id=\([0-9]*\).*/\1/p' | head -1)
 
-# watch the Alt modifier; when it is fully released, send Enter to rofi
-while kill -0 "$ROFI_PID" 2>/dev/null; do
-    STATE=$(xdotool getmodifierstate 2>/dev/null)
-    if ! echo "$STATE" | grep -q "alt"; then
-        # small debounce: make sure Alt is really gone, not mid-repeat
-        sleep 0.006
-        STATE2=$(xdotool getmodifierstate 2>/dev/null)
-        if ! echo "$STATE2" | grep -q "alt"; then
-            xdotool key --window "$(xdotool search --name 'Switch' | head -1)" Return
-            exit 0
-        fi
+KEYS=/tmp/alt-tab-keys.$$
+rm -f "$KEYS"
+xinput test "$KID" > "$KEYS" 2>/dev/null &
+XINPUT_PID=$!
+trap 'kill $XINPUT_PID 2>/dev/null; rm -f "$KEYS"' EXIT
+
+# commit as soon as Alt_L (keycode 64) is released
+while kill -0 "$ROFI_PID" 2>/dev/null && kill -0 "$XINPUT_PID" 2>/dev/null; do
+    if grep -q "key release 64" "$KEYS" 2>/dev/null; then
+        xdotool key Return
+        exit 0
     fi
-    sleep 0.006
+    sleep 0.01
 done
