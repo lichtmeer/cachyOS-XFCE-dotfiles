@@ -97,7 +97,10 @@ rollback: see [INSTALL.md](INSTALL.md).
   Super+Space toggles it.
 - **Rofi power menu**: five Android-style buttons (Log out, Restart,
   Shutdown, Suspend, Switch User); destructive actions confirm first.
-- **Wallpaper picker**: thumbnails + crossfade on switch (Super+<).
+- **Wallpaper picker**: thumbnails + true 60fps video crossfade on
+  switch (Super+<) - the fade plays on the desktop layer, behind your
+  windows, bar and dock; falls back to an instant switch if the video
+  tools are missing.
 - **Brightness widget**: sun glyph + percentage; scroll up/down on it
   changes the backlight in 5% steps (write permission handled by the
   installer's brightness step: video group + udev rule, one re-login).
@@ -130,6 +133,8 @@ no AUR anywhere):
 | `rofi` | launcher, power menu, wallpaper picker, Alt+Tab switcher |
 | `plank` | the dock |
 | `xdotool` | fullscreen watcher, Alt+Tab Enter commit (XTEST) |
+| `wmctrl` | pushes the wallpaper fade video below all windows |
+| `mpv` | plays the 60fps wallpaper crossfade video on the desktop layer |
 | `xorg-xinput` | Alt+Tab: raw Alt-release detection (keycode 64) |
 | `xorg-xrandr` | monitor detection for the wallpaper step (the property path contains the monitor name) |
 | `imagemagick` | wallpaper thumbnails and the switcher crossfade |

@@ -89,7 +89,8 @@ private files are kept, configs are overwritten with the repo versions.
 - [ ] Super+Tab opens the rofi window switcher (Enter confirms)
 - [ ] Super+T opens alacritty (maximized); fastfetch greets with the blue logo
 - [ ] Scrolling on the bar's sun icon changes screen brightness
-- [ ] Super+< opens the wallpaper picker; previews and crossfade work
+- [ ] Super+< opens the wallpaper picker; previews and the smooth
+      video crossfade work (behind windows, not covering them)
 - [ ] Power button in the bar opens the rofi power menu
 - [ ] Update icon: white with 0 = up to date, blue + count = updates
 - [ ] Glance widget on the right: date, weather, Spotify with clickable

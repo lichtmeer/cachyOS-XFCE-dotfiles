@@ -29,7 +29,7 @@ echo "    the bar (polybar), compositor (picom), menus (rofi), dock (plank),"
 echo "    terminal (alacritty), widget (conky), spectrum (pyspectrum), and helpers."
 # check each package: installed+current = skip, installed+outdated = report,
 # missing = install
-PKGS="polybar picom rofi plank xdotool xorg-xrandr xorg-xinput imagemagick pacman-contrib cachy-update alacritty fastfetch conky playerctl pulseaudio-utils curl noto-fonts noto-fonts-cjk ttf-nerd-fonts-symbols"
+PKGS="polybar picom rofi plank xdotool xorg-xrandr xorg-xinput wmctrl mpv imagemagick pacman-contrib cachy-update alacritty fastfetch conky playerctl pulseaudio-utils curl noto-fonts noto-fonts-cjk ttf-nerd-fonts-symbols"
 echo "    checking every package — watching me work:"
 MISSING=""; OUTDATED=""
 for p in $PKGS; do
