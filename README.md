@@ -4,7 +4,7 @@ My CachyOS (Arch-based) + XFCE desktop, rebuilt as a complete desktop
 shell replacement: floating Material You pill bar, rofi launcher /
 power menu / wallpaper picker / hold-and-release Alt+Tab switcher,
 plank dock, picom compositor, and a transparent glance widget with a
-live cava music spectrum and weather.
+live music spectrum and weather.
 
 ## Install — one command
 
@@ -24,14 +24,21 @@ The installer:
   Super+Tab, Super+Space, Super+T, Super+<), stock panel off,
   workspace margins (top 0, left/right 55, bottom 15)
 - switches xfwm4's compositor off so picom owns the screen
-- pins cava to your audio output (defers gracefully if no server yet)
+- starts the pyspectrum music bridge (parecord + pure Python, replaces
+  cava; defers gracefully if no audio server is running yet)
 - asks your weather location once (kept in `~/.config/conky/location`
   on your machine, never committed)
 - asks before copying wallpapers, then sets a random one so the
   Super+< switcher works from the first login
 - asks before installing YAMIS icons + Orchis-Dark theme — then
   applies theme, window style and icons automatically, and themes the
-  LightDM login screen too (when its config exists)
+  LightDM login screen too (when its config exists); a custom
+  YAMIS-style Element icon from this repo is installed alongside
+- sets up brightness control: adds you to the video group and writes
+  a udev rule so the bar's brightness widget can write the backlight
+  (needs one re-login)
+- copies the alacritty (opens maximized) and fastfetch (custom blue
+  logo) configs
 - offers a confirmed logout at the end (session settings and autostart
   entries apply on the next login)
 
@@ -53,13 +60,16 @@ rollback: see [INSTALL.md](INSTALL.md).
 | Folder | Contents | Install to |
 |---|---|---|
 | `install.sh` | one-command installer | run from repo root |
-| `polybar/` | `config.ini`, `launch.sh`, `hide-when-overlapped.sh`, `cachyos-updates.sh` | `~/.config/polybar/` |
-| `rofi/` | `config.rasi`, `grid.rasi`, `power.rasi`, `power-buttons.rasi`, `window.rasi`, `power-menu.sh`, `power.sh`, `wallpaper.sh`, `wallpaper-fade.sh`, `alt-tab.sh` | `~/.config/rofi/` |
+| `polybar/` | `config.ini`, `launch.sh`, `hide-when-overlapped.sh`, `cachyos-updates.sh`, `brightness.sh`, `cpu.sh` | `~/.config/polybar/` |
+| `rofi/` | `config.rasi`, `grid.rasi`, `power.rasi`, `power-buttons.rasi`, `window.rasi`, `power-menu.sh`, `power.sh`, `wallpaper.sh`, `wallpaper-fade.sh`, `alt-tab.sh`, `rofi-theme-aware.sh` | `~/.config/rofi/` |
 | `picom/` | `picom.conf` | `~/.config/picom/` |
-| `conky/` | `conky.conf`, `glance.lua`, `cava.conf`, `cava-spectrum.sh`, `weather.sh`, `spotify-status.sh`, `install.sh` | `~/.config/conky/` |
+| `conky/` | `conky.conf`, `glance.lua`, `cava-spectrum.sh` (pyspectrum bridge), `pyspectrum.py`, `weather.sh`, `spotify-status.sh`, `install.sh` | `~/.config/conky/` |
 | `plank/` | `dock.theme` (MaterialPill) | `~/.local/share/plank/themes/MaterialPill/` |
 | `autostart/` | `Polybar.desktop`, `Polybar overlap watcher.desktop`, `picom.desktop`, `plank.desktop`, `Conky glance.desktop` | `~/.config/autostart/` |
 | `wallpapers/` | wallpaper collection, used by `rofi/wallpaper.sh` | `~/Pictures/wallpapers/` |
+| `alacritty/` | `alacritty.toml` (opens maximized) | `~/.config/alacritty/` |
+| `fastfetch/` | `config.jsonc`, `logo.txt` (terminal greeting) | `~/.config/fastfetch/` |
+| `icons/` | `element-desktop.svg` (custom YAMIS-style Element icon) | `~/.icons/YAMIS/apps/scalable/` |
 | `changes/` | dated change reports (the repo's changelog) | - |
 
 ## What it looks like
@@ -67,7 +77,7 @@ rollback: see [INSTALL.md](INSTALL.md).
 - **Pill bar (google-top)**: floating rounded pill, 95% width, Material
   You dark tonal palette (#1C1B1F surface, #A4C3FF accent). Left: power
   button opening the rofi power menu, GNOME-style workspace dots.
-  Center: clock. Right: disk, volume, RAM, CPU, update checker, tray.
+  Center: clock. Right: disk, volume, brightness, RAM, CPU, update checker, tray.
 - **Invisible reserve bar (struthelper)**: full-width bar that reserves
   the top row so no window ever sits beside the pill.
 - **Fullscreen watcher (v3)**: hides the pill only while a window is
@@ -76,20 +86,30 @@ rollback: see [INSTALL.md](INSTALL.md).
   do NOT trigger the hide.
 - **Alt+Tab switcher** (`rofi/alt-tab.sh`): Windows-style. Hold Alt,
   tap Tab to cycle the switcher, release Alt to focus the highlighted
-  window (~20ms commit, no Enter). Super+Tab opens the same switcher
-  with classic confirm-on-Enter.
+  window (release detected via xinput raw keycodes — the 2026 xdotool
+  build broke modifier polling — commit fires in ~10ms, no Enter).
+  Super+Tab opens the same switcher with classic confirm-on-Enter.
 - **Rofi launcher**: compact centered list below the bar, recolored to
-  the polybar palette, YAMIS icons, Super+Space toggles it.
+  the polybar palette. Icons follow the current Xfce icon theme at
+  every launch (`rofi-theme-aware.sh` wrapper — nothing hardcoded).
+  Super+Space toggles it.
 - **Rofi power menu**: five Android-style buttons (Log out, Restart,
   Shutdown, Suspend, Switch User); destructive actions confirm first.
 - **Wallpaper picker**: thumbnails + crossfade on switch (Super+<).
-- **Update checker**: white CachyOS icon when up to date; pulses
-  white/blue with a count when updates are pending. Checks at login,
-  then hourly; left-click runs the guided updater.
+- **Brightness widget**: sun glyph + percentage; scroll up/down on it
+  changes the backlight in 5% steps (write permission handled by the
+  installer's brightness step: video group + udev rule, one re-login).
+- **CPU widget**: always two digits (01%, 09%) so the bar never
+  shifts when usage drops below 10%.
+- **Terminal**: alacritty opens every window maximized; fastfetch
+  greets with a custom blue logo in `~/.config/fastfetch`.
+- **Update checker**: white CachyOS glyph with a 0 when the system is
+  current; blue with a count when updates are pending. Checks at
+  login, then hourly; left-click runs the guided updater.
 - **conky-glance widget**: transparent "At a Glance" card on the right
   edge — date headline, weather (wttr.in, private location file), and
   Spotify: title, artist, clickable prev/play/pause/next buttons,
-  progress bar, and a live 24-bar cava music spectrum while music
+  progress bar, and a live 24-bar music spectrum while music
   plays. Bars render accent blue on peaks, soft white otherwise.
   Shadow-free (picom excludes it), starts after picom is up.
 - **picom**: GLX compositor, 12px rounded window corners (xfwm4's own
@@ -107,14 +127,16 @@ no AUR anywhere):
 | `picom` | compositor: rounded corners, no shadows on the widget |
 | `rofi` | launcher, power menu, wallpaper picker, Alt+Tab switcher |
 | `plank` | the dock |
-| `xdotool` | Alt+Tab key-state polling, fullscreen watcher |
+| `xdotool` | fullscreen watcher, Alt+Tab Enter commit (XTEST) |
+| `xorg-xinput` | Alt+Tab: raw Alt-release detection (keycode 64) |
 | `xorg-xrandr` | monitor detection for the wallpaper step (the property path contains the monitor name) |
 | `imagemagick` | wallpaper thumbnails and the switcher crossfade |
 | `pacman-contrib` | update checker (`checkupdates`) |
 | `cachy-update` | CachyOS update tool the bar's updater launches |
-| `alacritty` | terminal (Super+T) |
+| `alacritty` | terminal (Super+T), opens maximized |
+| `fastfetch` | terminal greeting (custom config + logo) |
 | `conky` | the glance widget |
-| `cava` | the music spectrum |
+| `pulseaudio-utils` | `parecord`/`pactl` feed the pyspectrum music bridge |
 | `playerctl` | track info + playback buttons (talks to Spotify) |
 | `curl` | weather fetch (wttr.in) |
 | `noto-fonts`, `noto-fonts-cjk` | text rendering, full unicode coverage |
@@ -127,7 +149,7 @@ yes is always safe, `--needed` never reinstalls):
   Spotify player via playerctl; without it that section stays empty.
 
 Needed at download time only (already on any Arch/CachyOS base
-install): `git` — step 9 fetches YAMIS + Orchis-Dark from their
+install): `git` — step 10 fetches YAMIS + Orchis-Dark from their
 repositories (only when you answer yes).
 
 The glance widget deliberately uses no icon-font glyphs — its music
