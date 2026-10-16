@@ -48,7 +48,7 @@ while true; do
     elif [ "$pending" = true ]; then
         line="%{F${IDLE}}${ICON}"
     else
-        line="%{F${IDLE}}${ICON} ..."
+        line="%{F${IDLE}}${ICON} 0"
     fi
 
     if [ "$line" != "$last" ]; then
