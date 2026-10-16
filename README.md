@@ -74,6 +74,8 @@ rollback: see [INSTALL.md](INSTALL.md).
 
 ## What it looks like
 
+![My desktop](screenshots/r1fmahud1wvh1.png)
+
 - **Pill bar (google-top)**: floating rounded pill, 95% width, Material
   You dark tonal palette (#1C1B1F surface, #A4C3FF accent). Left: power
   button opening the rofi power menu, GNOME-style workspace dots.
