@@ -163,8 +163,8 @@ xfconf-query -c xfwm4 -p /general/margin_bottom -n -t int -s 15 2>/dev/null || \
     xfconf-query -c xfwm4 -p /general/margin_bottom -t int -s 15
 echo "    workspace margins set: top 0, left/right 55, bottom 15"
 # Super+Space opens the app launcher
-xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>space" -n -t string -s "rofi -show drun" 2>/dev/null || \
-    xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>space" -t string -s "rofi -show drun"
+xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>space" -n -t string -s "$HOME/.config/rofi/rofi-theme-aware.sh -show drun" 2>/dev/null || \
+    xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>space" -t string -s "$HOME/.config/rofi/rofi-theme-aware.sh -show drun"
 # Super+t opens the terminal
 xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>t" -n -t string -s "alacritty" 2>/dev/null || \
     xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>t" -t string -s "alacritty"
