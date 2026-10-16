@@ -4,7 +4,6 @@ configuration {
     display-drun:                   "Search";
     drun-display-format:            "{name}";
     font:                           "Noto Sans 11";
-    icon-theme:                     "YAMIS";
     hide-scrollbar:                 true;
     kb-cancel:                      "Escape,Control+bracketleft,Super+space";
 }

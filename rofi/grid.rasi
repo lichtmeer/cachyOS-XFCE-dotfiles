@@ -1,7 +1,6 @@
 configuration {
     font:                          "FantasqueSansMono Nerd Font 10";
     show-icons:                    true;
-    icon-theme:                    "YAMIS";
     display-drun:                   "";
     drun-display-format:           "{name}";
     disable-history:               false;

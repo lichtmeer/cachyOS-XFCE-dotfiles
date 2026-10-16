@@ -4,7 +4,6 @@ configuration {
     display-window:                 "Switch";
     display-drun:                   "Search";
     font:                           "Noto Sans 11";
-    icon-theme:                     "YAMIS";
     hide-scrollbar:                 true;
     kb-row-down:                  "Down,Alt+Tab";
     kb-row-up:                    "Up,Alt+Shift+Tab";

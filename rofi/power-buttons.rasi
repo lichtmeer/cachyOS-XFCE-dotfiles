@@ -1,7 +1,6 @@
 configuration {
     font:                           "Noto Sans 12";
     show-icons:                     true;
-    icon-theme:                     "YAMIS";
     kb-cancel:                      "Escape,Super+space";
 }
 
