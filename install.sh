@@ -87,7 +87,7 @@ echo "==> [2/11] Polybar ..."
 mkdir -p ~/.config/polybar
 cp polybar/* ~/.config/polybar/
 chmod +x ~/.config/polybar/*.sh
-echo "    done (bar, watcher v3, update checker)"
+echo "    done (bar, watcher, update checker, brightness, cpu)"
 
 echo "==> [3/11] Rofi ..."
 mkdir -p ~/.config/rofi
