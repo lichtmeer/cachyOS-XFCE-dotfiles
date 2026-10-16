@@ -312,6 +312,15 @@ if [ "$THEME" = "y" ] || [ "$THEME" = "Y" ]; then
         # inside an icon theme is wrong anyway)
         if (cd "$TMP/yamis" && tar --exclude=.git -cf - .) | tar -xf - -C ~/.icons/YAMIS/; then
             echo "    YAMIS icons installed to ~/.icons/YAMIS/"
+        # custom YAMIS-style icons from this repo (Element): installed under
+        # every name apps may request
+        if [ -f "$REPO/icons/element-desktop.svg" ] && [ -d ~/.icons/YAMIS/apps/scalable ]; then
+            for name in element element-desktop io.element.Element; do
+                cp "$REPO/icons/element-desktop.svg" ~/.icons/YAMIS/apps/scalable/"$name".svg
+            done
+            gtk-update-icon-cache -f ~/.icons/YAMIS 2>/dev/null || true
+            echo "    custom Element icon installed (element, element-desktop, io.element.Element)"
+        fi
         else
             echo "    YAMIS copy failed (skipped)"
         fi
