@@ -4,7 +4,13 @@
 # entry when the user releases the Alt key (like Windows Alt+Tab).
 
 # start rofi windowed, remember its pid
-rofi -show window -theme "$HOME/.config/rofi/window.rasi" &
+# pass the CURRENT Xfce icon theme to rofi (it cannot detect it alone)
+THEME=$(xfconf-query -c xsettings -p /Net/IconThemeName 2>/dev/null)
+ICON_ARGS=()
+if [ -n "$THEME" ]; then
+    ICON_ARGS=(-icon-theme "$THEME")
+fi
+rofi -show window -theme "$HOME/.config/rofi/window.rasi" "${ICON_ARGS[@]}" &
 ROFI_PID=$!
 
 # wait until rofi is actually up

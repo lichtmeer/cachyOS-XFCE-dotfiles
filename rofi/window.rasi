@@ -1,4 +1,7 @@
 configuration {
+    window {
+        prefer-icon-theme: true;
+    }
     modi:                           "window,drun";
     show-icons:                     true;
     display-window:                 "Switch";

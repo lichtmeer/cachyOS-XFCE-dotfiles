@@ -136,8 +136,8 @@ xfconf-query -c xfce4-keyboard-shortcuts -p /xfwm4/switch_window_key -n -t strin
 xfconf-query -c xfce4-keyboard-shortcuts -p /xfwm4/cycle_windows_key -n -t string -s empty 2>/dev/null || true
 xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Alt>Tab" -n -t string -s "$HOME/.config/rofi/alt-tab.sh" 2>/dev/null || \
     xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Alt>Tab" -t string -s "$HOME/.config/rofi/alt-tab.sh"
-xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>Tab" -n -t string -s "rofi -show window -theme $HOME/.config/rofi/window.rasi" 2>/dev/null || \
-    xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>Tab" -t string -s "rofi -show window -theme $HOME/.config/rofi/window.rasi"
+xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>Tab" -n -t string -s "$HOME/.config/rofi/rofi-theme-aware.sh -show window -theme $HOME/.config/rofi/window.rasi" 2>/dev/null || \
+    xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>Tab" -t string -s "$HOME/.config/rofi/rofi-theme-aware.sh -show window -theme $HOME/.config/rofi/window.rasi"
 echo "    done (Alt+Tab hold-and-release, Super+Tab classic)"
 
 echo "==> XFCE settings (stock panel off, screen margins, launcher key) ..."
