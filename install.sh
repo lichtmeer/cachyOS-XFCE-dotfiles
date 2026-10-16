@@ -23,7 +23,7 @@ echo " CachyOS + XFCE desktop — one-command setup"
 echo " user: $(whoami)   host: $(uname -n)"
 echo "=========================================="
 
-echo "==> [1/9] System packages ..."
+echo "==> [1/10] System packages ..."
 echo "    This step makes sure every tool the desktop needs is installed:"
 echo "    the bar (polybar), compositor (picom), menus (rofi), dock (plank),"
 echo "    terminal (alacritty), widget (conky), spectrum (pyspectrum), and helpers."
@@ -83,33 +83,33 @@ else
     echo "    skipped — install later with: sudo pacman -S spotify-launcher"
 fi
 
-echo "==> [2/9] Polybar ..."
+echo "==> [2/10] Polybar ..."
 mkdir -p ~/.config/polybar
 cp polybar/* ~/.config/polybar/
 chmod +x ~/.config/polybar/*.sh
 echo "    done (bar, watcher v3, update checker)"
 
-echo "==> [3/9] Rofi ..."
+echo "==> [3/10] Rofi ..."
 mkdir -p ~/.config/rofi
 cp rofi/* ~/.config/rofi/
 chmod +x ~/.config/rofi/*.sh
 echo "    done (launcher, power menu, wallpaper picker, alt-tab)"
 
-echo "==> [4/9] Picom ..."
+echo "==> [4/10] Picom ..."
 mkdir -p ~/.config/picom
 cp picom/picom.conf ~/.config/picom/
 echo "    done (shadow exclusion for the widget included)"
 
-echo "==> [5/9] Conky glance widget ..."
+echo "==> [5/10] Conky glance widget ..."
 bash conky/install.sh
 echo "    done (may have asked for your weather location)"
 
-echo "==> [6/9] Plank ..."
+echo "==> [6/10] Plank ..."
 mkdir -p ~/.local/share/plank/themes/MaterialPill
 cp plank/dock.theme ~/.local/share/plank/themes/MaterialPill/
 echo "    done (pick 'MaterialPill' in plank's preferences once)"
 
-echo "==> [7/9] Autostart + keybindings ..."
+echo "==> [7/10] Autostart + keybindings ..."
 mkdir -p ~/.config/autostart
 for f in autostart/*.desktop; do
     cp "$f" ~/.config/autostart/"$(basename "$f")"
@@ -166,7 +166,7 @@ echo "    done (re-login shows the pill bar instead of the stock panel)"
 echo "    NOTE: once, in Settings > Session and Startup > Sessions:"
 echo "    clear saved sessions (prevents double-starting watchers)."
 
-echo "==> [8/9] Wallpapers ..."
+echo "==> [8/10] Wallpapers ..."
 if [ -d "$REPO/wallpapers" ] && ls "$REPO"/wallpapers/* >/dev/null 2>&1; then
     read -r -p "    Copy the repo's wallpapers to ~/Pictures/wallpapers? [Y/n] " ANS
     if [ "${ANS:-y}" != "n" ] && [ "${ANS:-Y}" != "n" ]; then
@@ -282,7 +282,7 @@ if [ -d "$REPO/wallpapers" ] && ls "$REPO"/wallpapers/* >/dev/null 2>&1; then
     fi
 fi
 
-echo "==> [9/9] Icon pack + GTK theme (optional, from GitHub) ..."
+echo "==> [9/10] Icon pack + GTK theme (optional, from GitHub) ..."
 read -r -p "    Install YAMIS icons + Orchis-Dark theme? (needs internet; ~1 min) [y/N] " THEME
 if [ "$THEME" = "y" ] || [ "$THEME" = "Y" ]; then
     TMP=$(mktemp -d)
@@ -344,6 +344,29 @@ if [ "$THEME" = "y" ] || [ "$THEME" = "Y" ]; then
 else
     echo "    skipped (see INSTALL.md section 3 for the manual route)"
 fi
+
+echo "==> [10/10] Brightness control (backlight write permission) ..."
+echo "    Lets the bar's brightness widget change your screen backlight."
+echo "    One-time per machine; needs your SUDO PASSWORD, then a re-login."
+if id -nG "$USER" | tr ' ' '\n' | grep -qx video; then
+    echo "    user already in video group"
+else
+    sudo gpasswd -a "$USER" video && echo "    user added to video group"
+fi
+BLRULE=/etc/udev/rules.d/99-backlight.rules
+if [ -f "$BLRULE" ] && grep -q 'SUBSYSTEM=="backlight"' "$BLRULE"; then
+    echo "    udev rule already present"
+else
+    printf 'SUBSYSTEM=="backlight", RUN+="/bin/chgrp video /sys/class/backlight/%%k/brightness"\nSUBSYSTEM=="backlight", RUN+="/bin/chmod 664 /sys/class/backlight/%%k/brightness"\n' \
+        | sudo tee "$BLRULE" >/dev/null \
+        && echo "    udev rule written to $BLRULE"
+fi
+for b in /sys/class/backlight/*/brightness; do
+    [ -e "$b" ] || continue
+    sudo chgrp video "$b" && sudo chmod 664 "$b" && echo "    $b: video group can now write"
+done
+echo "    NOTE: log out and back in once so the video group membership is active."
+echo ""
 
 echo "==> Verifying ..."
 FAIL=0
