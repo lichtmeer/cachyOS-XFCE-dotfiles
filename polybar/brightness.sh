@@ -1,6 +1,14 @@
 #!/bin/bash
-B=/sys/class/backlight/amdgpu_bl1/brightness
-M=/sys/class/backlight/amdgpu_bl1/max_brightness
+# Auto-detect the backlight device: first one under /sys/class/backlight/.
+# Works on AMD (amdgpu_bl*), Intel (intel_backlight), etc.
+DEV=""
+for d in /sys/class/backlight/*; do
+    [ -e "$d/brightness" ] && [ -e "$d/max_brightness" ] && { DEV="$d"; break; }
+done
+# no backlight found (desktop PC?): show a dimmed sun, do nothing else
+[ -n "$DEV" ] || { printf '\uf185 --\n'; exit 0; }
+B="$DEV/brightness"
+M="$DEV/max_brightness"
 case "$1" in
   up)
     new=$(( $(<$B) + $(<$M) / 20 ))
