@@ -19,6 +19,9 @@ explained in the output right before the password prompt.
 
 (The installer prints these as numbered steps [1/11] to [11/11]; the
 Spotify question and the logout offer are folded into that run.)
+Before step 1 it also prints [Backup] once — on the FIRST run it saves
+everything it is about to replace (configs, XFCE settings, icons) to
+~/.local/share/cachyos-dotfiles-backup so uninstall.sh can revert it.
 
 1. **System packages** — checks every package, one line per package
    (ok / MISSING / outdated). Installs only missing ones with
