@@ -12,7 +12,9 @@ live music spectrum and weather.
     cd cachyOS-XFCE-dotfiles && bash install.sh
 
 The installer:
-
+- makes a full backup of everything it replaces on its FIRST run
+  (kept in `~/.local/share/cachyos-dotfiles-backup`) — so the whole
+  setup can be reverted later with `bash uninstall.sh`
 - checks every package, one line per package (installs only missing
   ones, reports outdated, never upgrades silently; pacman shows its
   normal output during install)

@@ -23,6 +23,104 @@ echo " CachyOS + XFCE desktop — one-command setup"
 echo " user: $(whoami)   host: $(uname -n)"
 echo "=========================================="
 
+# ---------- Backup of everything this installer replaces (first run only)
+# Lets uninstall.sh put the machine back exactly as it was.
+BK="$HOME/.local/share/cachyos-dotfiles-backup"
+if [ ! -f "$BK/.done" ]; then
+    echo "==> [Backup] Saving your current files and settings (first run only) ..."
+    mkdir -p "$BK/files"
+    : > "$BK/new.list"; : > "$BK/restored.list"
+    snap() {
+        case "$1" in *\**) return ;; esac   # unmatched glob (literal *)
+        if [ -e "$1" ]; then
+            mkdir -p "$BK/files/$(dirname "$1")"
+            if cp -a "$1" "$BK/files/$1"; then
+                printf '%s\n' "$1" >> "$BK/restored.list"
+            else
+                echo "    WARNING: could not back up $1"
+            fi
+        else
+            printf '%s\n' "$1" >> "$BK/new.list"
+        fi
+    }
+    for f in "$HOME/.config/polybar/brightness.sh" \
+             "$HOME/.config/polybar/cachyos-updates.sh" \
+             "$HOME/.config/polybar/config.ini" \
+             "$HOME/.config/polybar/cpu.sh" \
+             "$HOME/.config/polybar/hide-when-overlapped.sh" \
+             "$HOME/.config/polybar/launch.sh" \
+             "$HOME/.config/rofi/alt-tab.sh" \
+             "$HOME/.config/rofi/config.rasi" \
+             "$HOME/.config/rofi/grid.rasi" \
+             "$HOME/.config/rofi/power-buttons.rasi" \
+             "$HOME/.config/rofi/power-menu.sh" \
+             "$HOME/.config/rofi/power.rasi" \
+             "$HOME/.config/rofi/power.sh" \
+             "$HOME/.config/rofi/rofi-theme-aware.sh" \
+             "$HOME/.config/rofi/wallpaper-fade.sh" \
+             "$HOME/.config/rofi/wallpaper.sh" \
+             "$HOME/.config/rofi/window.rasi" \
+             "$HOME/.config/picom/picom.conf" \
+             "$HOME/.config/alacritty/alacritty.toml" \
+             "$HOME/.config/fastfetch/config.jsonc" \
+             "$HOME/.config/fastfetch/logo.txt" \
+             "$HOME/.config/conky/conky.conf" \
+             "$HOME/.config/conky/glance.lua" \
+             "$HOME/.config/conky/weather.sh" \
+             "$HOME/.config/conky/spotify-status.sh" \
+             "$HOME/.config/conky/pyspectrum.py" \
+             "$HOME/.config/conky/cava-spectrum.sh" \
+             "$HOME/.local/share/plank/themes/MaterialPill/dock.theme"; do
+        snap "$f"
+    done
+    # autostart entries: enumerate what this repo ships (a glob of what
+    # already exists would MISS the entries the installer creates new)
+    for f in "$REPO"/autostart/*.desktop; do
+        [ -e "$f" ] && snap "$HOME/.config/autostart/$(basename "$f")"
+    done
+    # YAMIS icons: the installer replaces the whole directory
+    if [ -d "$HOME/.icons/YAMIS" ]; then
+        (cd "$HOME/.icons" && tar -cf "$BK/files/yamis-icons.tar" YAMIS) \
+            && printf '%s\n' "$HOME/.icons/YAMIS" >> "$BK/restored.list" \
+            || echo "    WARNING: could not back up ~/.icons/YAMIS"
+    else
+        printf '%s\n' "$HOME/.icons/YAMIS" >> "$BK/new.list"
+    fi
+    # every xfconf setting this installer changes: save the current value
+    : > "$BK/xfconf-before.tsv"
+    save() {
+        local v
+        v=$(xfconf-query -c "$1" -p "$2" 2>/dev/null) || return 0
+        case "$v" in *$'\n'*) return 0 ;; esac   # array value: skip (factory default is the right revert)
+        printf '%s|%s|%s\n' "$1" "$2" "$v" >> "$BK/xfconf-before.tsv"
+    }
+    for prop in "/xfwm4/custom/<Alt>Tab" "/xfwm4/custom/<Super>Tab" \
+                "/xfwm4/custom/<Alt><Shift>Tab" "/xfwm4/switch_window_key" \
+                "/xfwm4/cycle_windows_key" "/commands/custom/<Alt>Tab" \
+                "/commands/custom/<Super>Tab" "/commands/custom/<Super>space" \
+                "/commands/custom/<Super>t" "/commands/custom/<Super>less"; do
+        save xfce4-keyboard-shortcuts "$prop"
+    done
+    save xfce4-session /sessions/Failsafe/Client2_Command
+    save xfce4-panel /panels
+    save xfwm4 /general/use_compositing
+    save xfwm4 /general/margin_top
+    save xfwm4 /general/margin_left
+    save xfwm4 /general/margin_right
+    save xfwm4 /general/margin_bottom
+    save xfwm4 /general/theme
+    save xsettings /Net/ThemeName
+    save xsettings /Net/IconThemeName
+    while read -r prop; do
+        [ -n "$prop" ] && save xfce4-desktop "$prop"
+    done < <(xfconf-query -c xfce4-desktop -l 2>/dev/null | grep 'last-image' || true)
+    touch "$BK/.done"
+    echo "    saved to: $BK"
+    echo "    (uninstall.sh uses this to revert everything)"
+else
+    echo "==> [Backup] First-run backup already exists — kept untouched"
+fi
+
 echo "==> [1/11] System packages ..."
 echo "    This step makes sure every tool the desktop needs is installed:"
 echo "    the bar (polybar), compositor (picom), menus (rofi), dock (plank),"

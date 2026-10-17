@@ -122,8 +122,31 @@ private files are kept, configs are overwritten with the repo versions.
 - The keybindings are stored in xfconf (machine-side, not files);
   `install.sh` applies them, this doc records them.
 
-## Rollback pointers
+## Uninstall / rollback
 
+Everything is reversible: `install.sh` makes a full backup of every
+file and setting it replaces on its FIRST run (kept in
+`~/.local/share/cachyos-dotfiles-backup` — re-runs never touch it).
+
+Run from the repo root:
+
+    bash uninstall.sh
+
+It puts back:
+- every config file you had before (polybar, rofi, picom, alacritty,
+  fastfetch, conky, plank theme, autostart entries, YAMIS icons)
+- every XFCE setting it changed (keybindings, panel, compositor,
+  margins, theme names, wallpaper) — values that didn't exist before
+  go back to factory default
+- the udev rule, the login-screen theme lines and the video group
+  membership (sudo; asks first)
+- optionally the packages (asks; keeps anything still needed)
+
+Files that are purely yours are never touched: your wallpapers in
+`~/Pictures/wallpapers` and the weather location in
+`~/.config/conky/location`.
+
+Manual rollback pointers (without uninstall.sh):
 - XFCE panel: delete the failsafe override
   (`xfconf-query -c xfce4-session -p /sessions/Failsafe/Client2_Command -r`)
   and re-add a panel in xfconf.
