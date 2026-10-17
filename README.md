@@ -47,6 +47,18 @@ The installer:
 Safe to re-run: installed packages are skipped, private files are kept,
 configs are overwritten with the repo versions.
 
+### Uninstall — one command
+
+Changed your mind? Everything above is reversible:
+
+    bash uninstall.sh
+
+It restores the backup the installer made on its first run: your old
+config files, keybindings, XFCE panel, compositor, theme and wallpaper
+settings — and offers to revert the system-level bits too (backlight
+udev rule, login-screen theme, video group, packages). Your personal
+files (wallpapers, weather location) are never touched.
+
 Details, the one remaining manual step, verification checklist and
 rollback: see [INSTALL.md](INSTALL.md).
 
@@ -61,7 +73,8 @@ rollback: see [INSTALL.md](INSTALL.md).
 
 | Folder | Contents | Install to |
 |---|---|---|
-| `install.sh` | one-command installer | run from repo root |
+| `install.sh` | one-command installer (backs up everything it replaces on its first run) | run from repo root |
+| `uninstall.sh` | one-command uninstall — reverts the first-run backup | run from repo root |
 | `polybar/` | `config.ini`, `launch.sh`, `hide-when-overlapped.sh`, `cachyos-updates.sh`, `brightness.sh`, `cpu.sh` | `~/.config/polybar/` |
 | `rofi/` | `config.rasi`, `grid.rasi`, `power.rasi`, `power-buttons.rasi`, `window.rasi`, `power-menu.sh`, `power.sh`, `wallpaper.sh`, `wallpaper-fade.sh`, `alt-tab.sh`, `rofi-theme-aware.sh` | `~/.config/rofi/` |
 | `picom/` | `picom.conf` | `~/.config/picom/` |
